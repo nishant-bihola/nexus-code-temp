@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useTransform, useInView } from 'motion/react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -50,6 +50,24 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const projectsSectionRef = useRef<HTMLDivElement>(null);
   const servicesSectionRef = useRef<HTMLDivElement>(null);
+  const dividerRef = useRef<HTMLDivElement>(null);
+  const isServicesInView = useInView(servicesSectionRef, { margin: '-20% 0px -20% 0px' });
+  const isProjectsInView = useInView(projectsSectionRef, { margin: '-10% 0px -10% 0px' });
+
+  const { scrollYProgress: servicesProgress } = useScroll({
+    target: servicesSectionRef,
+    container: scrollContainerRef,
+    offset: ['start end', 'end start'],
+  });
+  const { scrollYProgress: projectsProgress } = useScroll({
+    target: projectsSectionRef,
+    container: scrollContainerRef,
+    offset: ['start end', 'end start'],
+  });
+
+  const servicesHeaderY = useTransform(servicesProgress, [0, 1], ['8%', '-8%']);
+  const projectsHeaderY = useTransform(projectsProgress, [0, 1], ['10%', '-10%']);
+  const projectsImgScale = useTransform(projectsProgress, [0, 0.5, 1], [1.08, 1, 1.08]);
 
   const { scrollYProgress } = useScroll({
     container: scrollContainerRef,
@@ -385,200 +403,366 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
         </footer>
       </section>
 
-      {/* Services Section */}
-      <section 
+      {/* ─── About / Services Section ─── */}
+      <section
         ref={servicesSectionRef}
-        className="relative w-full min-h-[80vh] bg-[#050505] p-8 md:p-32 snap-start z-20"
+        className="relative w-full min-h-screen bg-[#050505] overflow-hidden snap-start z-20"
       >
-        <div className="max-w-7xl mx-auto h-full flex flex-col justify-center">
-          <div className="mb-20">
-            <span className="text-[10px] uppercase tracking-[0.8em] text-[#ff3366] font-mono block mb-4">Capabilities</span>
-            <h2 className="text-6xl md:text-8xl font-display font-medium tracking-tighter text-white leading-none">Our <br /><span className="text-white/20">Specialization</span></h2>
+        {/* Parallax header block */}
+        <motion.div
+          style={{ y: servicesHeaderY }}
+          className="px-8 md:px-24 pt-28 pb-0 max-w-7xl mx-auto"
+        >
+          <div className="overflow-hidden">
+            <motion.span
+              initial={{ y: '110%' }}
+              animate={isServicesInView ? { y: 0 } : { y: '110%' }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              className="text-[10px] uppercase tracking-[0.8em] text-[#ff3366] font-mono block mb-4"
+            >
+              Capabilities
+            </motion.span>
           </div>
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          <div className="overflow-hidden">
+            <motion.h2
+              initial={{ y: '110%' }}
+              animate={isServicesInView ? { y: 0 } : { y: '110%' }}
+              transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
+              className="text-5xl sm:text-7xl md:text-8xl font-display font-medium tracking-tighter text-white leading-none"
+            >
+              Our{' '}
+              <span className="text-white/15 italic font-serif font-light">Specialization</span>
+            </motion.h2>
+          </div>
+          {/* Animated rule */}
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={isServicesInView ? { scaleX: 1 } : { scaleX: 0 }}
+            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+            style={{ originX: 0 }}
+            className="h-px bg-gradient-to-r from-[#ff3366]/60 via-white/10 to-transparent mt-12 mb-20"
+          />
+        </motion.div>
+
+        {/* Cards */}
+        <div className="px-8 md:px-24 pb-24 max-w-7xl mx-auto">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8"
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: '-80px' }}
             variants={{
               hidden: { opacity: 0 },
-              show: { opacity: 1, transition: { staggerChildren: 0.15 } }
+              show: { opacity: 1, transition: { staggerChildren: 0.18 } },
             }}
           >
             {[
-              { 
-                title: 'Full-Stack Development', 
-                desc: 'Sleek, performant web applications built with Next.js, Node.js, and modern AI integrations.', 
+              {
+                title: 'Full-Stack Development',
+                desc: 'Sleek, performant web applications built with Next.js, Node.js, and modern AI integrations.',
                 icon: '⚡',
-                details: 'Our full-stack expertise spans the entire development lifecycle. We specialize in building scalable architectures using Next.js 14+, implementing robust server-side logic with Node.js/Express, and leveraging cutting-edge AI embedding for intelligent features. Every line of code is optimized for speed, security, and developer experience.'
+                details:
+                  'Our full-stack expertise spans the entire development lifecycle. We specialize in building scalable architectures using Next.js 14+, implementing robust server-side logic with Node.js/Express, and leveraging cutting-edge AI embedding for intelligent features. Every line of code is optimized for speed, security, and developer experience.',
               },
-              { 
-                title: 'Machine Learning', 
-                desc: 'Intelligent systems powered by neural networks and sophisticated data clustering algorithms.', 
+              {
+                title: 'Machine Learning',
+                desc: 'Intelligent systems powered by neural networks and sophisticated data clustering algorithms.',
                 icon: '🧠',
-                details: 'We push the boundaries of data science by implementing advanced neural networks and clustering algorithms (DBSCAN, K-Means). Our focus is on creating actionable insights from complex datasets, enabling predictive modeling that drives real-world business value. From CIFAR-10 classifiers to custom recommendation engines, we bring AI to life.'
+                details:
+                  'We push the boundaries of data science by implementing advanced neural networks and clustering algorithms (DBSCAN, K-Means). Our focus is on creating actionable insights from complex datasets, enabling predictive modeling that drives real-world business value.',
               },
-              { 
-                title: 'Visual Experience', 
-                desc: 'Immersive 3D environments and pixel-perfect UI/UX design that captivates audiences.', 
+              {
+                title: 'Visual Experience',
+                desc: 'Immersive 3D environments and pixel-perfect UI/UX design that captivates audiences.',
                 icon: '✨',
-                details: 'Visual storytelling is at our core. We blend high-end 3D graphics (Three.js/Spline) with meticulous UI/UX principles to create websites that don’t just look good—they feel alive. Our focus is on "Awwwards" level precision, ensuring every transition, micro-animation, and layout shift is purposeful and premium.'
-              }
+                details:
+                  'Visual storytelling is at our core. We blend high-end 3D graphics with meticulous UI/UX principles to create websites that feel alive. Our focus is on Awwwards-level precision—every transition, micro-animation, and layout shift is purposeful and premium.',
+              },
             ].map((service, i) => (
-              <motion.div 
+              <motion.div
                 key={service.title}
                 variants={{
-                  hidden: { opacity: 0, y: 30 },
-                  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
+                  hidden: { opacity: 0, y: 50, filter: 'blur(8px)' },
+                  show: {
+                    opacity: 1,
+                    y: 0,
+                    filter: 'blur(0px)',
+                    transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
+                  },
                 }}
-                className={`group relative glass p-10 rounded-2xl hover:bg-white/[0.05] transition-all duration-700 overflow-hidden cursor-pointer ${exploringService === i ? 'ring-2 ring-[#ff3366]' : ''}`}
+                className={`group relative glass p-8 md:p-10 rounded-2xl hover:bg-white/[0.04] transition-all duration-700 overflow-hidden cursor-pointer border border-white/5 ${
+                  exploringService === i ? 'ring-1 ring-[#ff3366]/60' : 'hover:border-white/10'
+                }`}
                 onClick={() => setExploringService(exploringService === i ? null : i)}
+                whileHover={{ y: -6 }}
+                transition={{ type: 'spring', stiffness: 220, damping: 22 }}
               >
-                <div className="absolute top-0 right-0 p-6 text-2xl opacity-20 group-hover:opacity-100 group-hover:scale-125 transition-all duration-700">{service.icon}</div>
-                <span className="text-[10px] text-[#ff3366] font-mono mb-8 block">0{i + 1}</span>
-                <h3 className="text-2xl font-display font-bold text-white mb-4 group-hover:text-[#ff3366] transition-colors">{service.title}</h3>
-                <p className="text-white/40 text-sm leading-relaxed mb-6 group-hover:text-white/60 transition-colors">{service.desc}</p>
-                
-                <AnimatePresence>
+                {/* background glow on hover */}
+                <div className="absolute -top-16 -right-16 w-32 h-32 rounded-full bg-[#ff3366]/0 group-hover:bg-[#ff3366]/5 blur-3xl transition-all duration-700" />
+                <motion.div
+                  className="absolute top-0 right-0 p-5 text-xl"
+                  animate={{ opacity: exploringService === i ? 1 : 0.15, scale: exploringService === i ? 1.2 : 1 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  {service.icon}
+                </motion.div>
+                <span className="text-[10px] text-[#ff3366] font-mono mb-6 block">0{i + 1}</span>
+                <h3 className="text-xl md:text-2xl font-display font-bold text-white mb-3 group-hover:text-[#ff3366] transition-colors duration-500">
+                  {service.title}
+                </h3>
+                <p className="text-white/40 text-sm leading-relaxed mb-6 group-hover:text-white/60 transition-colors duration-500">
+                  {service.desc}
+                </p>
+
+                <AnimatePresence initial={false}>
                   {exploringService === i && (
                     <motion.div
+                      key="details"
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                       className="overflow-hidden"
                     >
-                      <p className="text-xs text-white/80 font-light leading-relaxed mb-6 border-t border-white/5 pt-6 italic">
+                      <p className="text-xs text-white/70 font-light leading-relaxed mb-6 border-t border-white/5 pt-5 italic">
                         {service.details}
                       </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
 
-                <div className="flex items-center gap-2 text-[9px] uppercase tracking-widest text-white/20 group-hover:text-[#ff3366] transition-all duration-500">
+                <div className="flex items-center gap-2 text-[9px] uppercase tracking-widest text-white/25 group-hover:text-[#ff3366] transition-all duration-500">
                   <span>{exploringService === i ? 'Show Less' : 'Explore More'}</span>
-                  <div className={`w-6 h-[1px] bg-white/10 group-hover:bg-[#ff3366] transition-colors ${exploringService === i ? 'rotate-90' : ''}`} />
+                  <motion.div
+                    animate={{ rotate: exploringService === i ? 90 : 0 }}
+                    transition={{ duration: 0.35 }}
+                    className="w-5 h-[1px] bg-current"
+                  />
                 </div>
               </motion.div>
             ))}
           </motion.div>
         </div>
+
+        {/* ─── Cinematic bridge into Projects ─── */}
+        <div ref={dividerRef} className="relative w-full h-48 overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, scaleX: 0 }}
+            whileInView={{ opacity: 1, scaleX: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            style={{ originX: 0 }}
+            className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#ff3366]/30 to-transparent"
+          />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.9, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <span className="text-[9px] uppercase tracking-[0.6em] text-white/15 font-mono">
+              Selected Works&nbsp;&nbsp;↓
+            </span>
+          </motion.div>
+        </div>
       </section>
 
-      {/* Projects Showcase Section */}
-      <section 
+      {/* ─── Projects Section ─── */}
+      <section
         ref={projectsSectionRef}
-        className="relative w-full min-h-screen bg-black p-6 sm:p-8 md:p-24 snap-start z-20"
+        className="relative w-full min-h-screen bg-[#030303] overflow-hidden snap-start z-20"
       >
-        <div className="max-w-7xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 40, filter: 'blur(10px)' }}
-            whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 md:mb-24 gap-6 md:gap-8"
-          >
-            <div className="max-w-2xl">
-              <span className="text-[9px] md:text-[10px] uppercase tracking-[0.5em] text-[#ff3366] block mb-3 md:mb-4">Portfolio</span>
-              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-serif italic text-white leading-tight">
-                Digital <br />Craftsmanship
-              </h2>
+        {/* Parallax section header */}
+        <motion.div
+          style={{ y: projectsHeaderY }}
+          className="px-6 sm:px-8 md:px-24 pt-20 pb-0 max-w-7xl mx-auto"
+        >
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-4">
+            <div>
+              <div className="overflow-hidden mb-3">
+                <motion.span
+                  initial={{ y: '110%' }}
+                  animate={isProjectsInView ? { y: 0 } : { y: '110%' }}
+                  transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                  className="text-[9px] md:text-[10px] uppercase tracking-[0.5em] text-[#ff3366] font-mono block"
+                >
+                  Portfolio
+                </motion.span>
+              </div>
+              <div className="overflow-hidden">
+                <motion.h2
+                  initial={{ y: '110%' }}
+                  animate={isProjectsInView ? { y: 0 } : { y: '110%' }}
+                  transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.07 }}
+                  className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-serif italic text-white leading-tight"
+                >
+                  Digital{' '}
+                  <br />
+                  Craftsmanship
+                </motion.h2>
+              </div>
             </div>
-            <p className="text-white/40 text-xs sm:text-sm max-w-xs leading-relaxed tracking-wide">
-              A collection of UI/UX projects where functionality meets aesthetic perfection. Each pixel is intentional.
-            </p>
-          </motion.div>
+            <motion.p
+              initial={{ opacity: 0, x: 20 }}
+              animate={isProjectsInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
+              transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="text-white/35 text-xs sm:text-sm max-w-[220px] leading-relaxed tracking-wide md:text-right"
+            >
+              Functionality meets aesthetic perfection. Each pixel is intentional.
+            </motion.p>
+          </div>
+          {/* Animated rule */}
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={isProjectsInView ? { scaleX: 1 } : { scaleX: 0 }}
+            transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+            style={{ originX: 0 }}
+            className="h-px bg-gradient-to-r from-white/10 via-[#ff3366]/40 to-transparent mb-16 md:mb-24"
+          />
+        </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-12 gap-y-16 md:gap-y-32" style={{ perspective: '2000px' }}>
+        {/* Project Grid */}
+        <div className="px-6 sm:px-8 md:px-24 pb-24 max-w-7xl mx-auto">
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-16 gap-y-16 md:gap-y-36"
+            style={{ perspective: '2000px' }}
+          >
             {[
-              { 
-                title: 'Next.js Multi-Page App', 
-                category: 'Full Stack Development', 
+              {
+                title: 'Next.js Multi-Page App',
+                category: 'Full Stack Development',
                 img: 'https://picsum.photos/seed/code/800/1000',
-                desc: 'Implemented dynamic routing, form validation, and optimized rendering strategies.'
+                desc: 'Implemented dynamic routing, form validation, and optimised rendering strategies.',
               },
-              { 
-                title: 'Weather App', 
-                category: 'API Integration', 
+              {
+                title: 'Weather App',
+                category: 'API Integration',
                 img: 'https://picsum.photos/seed/weather/800/1000',
-                desc: 'Built a real-time weather comparison tool with API integration and caching.'
+                desc: 'Built a real-time weather comparison tool with API integration and caching.',
               },
-              { 
-                title: 'CIFAR-100 Classifier', 
-                category: 'Machine Learning / CNN', 
+              {
+                title: 'CIFAR-100 Classifier',
+                category: 'Machine Learning / CNN',
                 img: 'https://picsum.photos/seed/ai/800/1000',
-                desc: 'Developed a Convolutional Neural Network using TensorFlow/Keras with performance tuning.'
+                desc: 'Developed a Convolutional Neural Network using TensorFlow/Keras with performance tuning.',
               },
-              { 
-                title: 'Clustering Models', 
-                category: 'Data Science', 
+              {
+                title: 'Clustering Models',
+                category: 'Data Science',
                 img: 'https://picsum.photos/seed/data/800/1000',
-                desc: 'Applied K-Means, DBSCAN, ANN, and KNN for structured data analysis and predictive modeling.'
+                desc: 'Applied K-Means, DBSCAN, ANN, and KNN for structured data analysis.',
               },
-              { 
-                title: 'Movie Recommendation', 
-                category: 'AI / Streamlit', 
+              {
+                title: 'Movie Recommendation',
+                category: 'AI / Streamlit',
                 img: 'https://picsum.photos/seed/movie/800/1000',
-                desc: 'Built a collaborative filtering engine deployed with Streamlit for personalized movie suggestions.'
+                desc: 'Built a collaborative filtering engine deployed with Streamlit.',
               },
-              { 
-                title: 'Webflow CMS', 
-                category: 'Web Development', 
+              {
+                title: 'Webflow CMS',
+                category: 'Web Development',
                 img: 'https://picsum.photos/seed/design/800/1000',
-                desc: 'Developed responsive CMS-based websites, improved SEO performance, and optimized UI/UX.'
-              }
+                desc: 'Developed responsive CMS-based websites and improved SEO performance.',
+              },
             ].map((project, i) => {
               const [isImageLoaded, setIsImageLoaded] = useState(false);
               return (
-              <motion.div 
-                key={project.title}
-                initial={{ opacity: 0, y: 100, scale: 0.9, rotateX: 10 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 1, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className={`flex flex-col ${i % 2 === 1 ? 'md:mt-32' : ''} origin-bottom`}
-                whileHover={{ y: -10 }}
-              >
-                <motion.div 
-                  className="relative aspect-[4/5] overflow-hidden group cursor-pointer mb-6 md:mb-8 rounded-lg bg-white/5"
-                  onClick={() => handleProjectClick(project.title)}
-                  animate={clickedProject === project.title ? { scale: 0.95, rotate: -2 } : { scale: 1, rotate: 0 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                <motion.div
+                  key={project.title}
+                  initial={{ opacity: 0, y: 80, filter: 'blur(6px)' }}
+                  whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  viewport={{ once: true, margin: '-60px' }}
+                  transition={{
+                    duration: 1,
+                    delay: (i % 2) * 0.18,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className={`flex flex-col ${
+                    i % 2 === 1 ? 'md:mt-36' : ''
+                  } origin-bottom group/card`}
+                  whileHover={{ y: -8 }}
                 >
-                  {!isImageLoaded && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-8 h-8 border-2 border-[#ff3366]/20 border-t-[#ff3366] rounded-full animate-spin" />
+                  {/* Image wrapper with scroll parallax scale */}
+                  <motion.div
+                    className="relative aspect-[4/5] overflow-hidden cursor-pointer mb-5 md:mb-7 rounded-xl bg-white/5"
+                    onClick={() => handleProjectClick(project.title)}
+                    animate={
+                      clickedProject === project.title
+                        ? { scale: 0.95, rotate: -1.5 }
+                        : { scale: 1, rotate: 0 }
+                    }
+                    transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+                  >
+                    {!isImageLoaded && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-7 h-7 border-2 border-[#ff3366]/20 border-t-[#ff3366] rounded-full animate-spin" />
+                      </div>
+                    )}
+                    <motion.img
+                      src={project.img}
+                      alt={project.title}
+                      onLoad={() => setIsImageLoaded(true)}
+                      style={{ scale: projectsImgScale }}
+                      className={`w-full h-full object-cover grayscale group-hover/card:grayscale-0 transition-[filter] duration-700 ${
+                        isImageLoaded ? 'opacity-100' : 'opacity-0'
+                      }`}
+                      referrerPolicy="no-referrer"
+                    />
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent group-hover/card:opacity-0 transition-opacity duration-500" />
+                    {/* Hover CTA */}
+                    <div className="absolute inset-0 flex items-end p-6 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500">
+                      <span className="text-[9px] uppercase tracking-[0.5em] text-white/60 font-mono">
+                        View Project ↗
+                      </span>
                     </div>
-                  )}
-                  <img 
-                    src={project.img} 
-                    alt={project.title}
-                    onLoad={() => setIsImageLoaded(true)}
-                    className={`w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-110 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500" />
-                </motion.div>
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-4 sm:gap-0">
-                  <div>
-                    <h3 className={`text-2xl sm:text-3xl mb-1 sm:mb-2 transition-all duration-700 ${isHolding ? 'font-display font-bold uppercase tracking-tighter text-white' : 'font-serif italic text-white'}`}>{project.title}</h3>
-                    <p className={`text-[10px] sm:text-xs uppercase tracking-widest transition-all duration-700 ${isHolding ? 'font-mono text-[#ff3366]' : 'text-white/40'}`}>{project.category}</p>
+                  </motion.div>
+
+                  {/* Caption */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
+                    <div>
+                      <h3
+                        className={`text-2xl sm:text-3xl mb-1 transition-all duration-700 ${
+                          isHolding
+                            ? 'font-display font-bold uppercase tracking-tighter text-white'
+                            : 'font-serif italic text-white'
+                        }`}
+                      >
+                        {project.title}
+                      </h3>
+                      <p
+                        className={`text-[10px] uppercase tracking-widest transition-all duration-700 ${
+                          isHolding ? 'font-mono text-[#ff3366]' : 'text-white/35'
+                        }`}
+                      >
+                        {project.category}
+                      </p>
+                    </div>
+                    <p
+                      className={`text-[10px] sm:max-w-[160px] sm:text-right leading-relaxed transition-all duration-700 ${
+                        isHolding ? 'font-mono text-white/40' : 'text-white/25'
+                      }`}
+                    >
+                      {project.desc}
+                    </p>
                   </div>
-                  <p className={`text-[10px] sm:text-[11px] sm:max-w-[180px] sm:text-right leading-relaxed transition-all duration-700 ${isHolding ? 'font-mono text-white/50' : 'text-white/30'}`}>
-                    {project.desc}
-                  </p>
-                </div>
-              </motion.div>
-            )})}
+                </motion.div>
+              );
+            })}
           </div>
 
+          {/* CTA */}
           <div className="mt-24 md:mt-48 text-center">
-            <motion.button 
+            <motion.button
               onClick={handleStartProject}
               className="group relative inline-flex flex-col items-center"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <span className="text-[9px] md:text-[10px] uppercase tracking-[0.5em] group-hover:tracking-[0.8em] text-white/40 mb-4 group-hover:text-white transition-all duration-500">Start a Project</span>
+              <span className="text-[9px] md:text-[10px] uppercase tracking-[0.5em] group-hover:tracking-[0.8em] text-white/35 mb-4 group-hover:text-white transition-all duration-500">
+                Start a Project
+              </span>
               <div className="w-px h-16 md:h-24 bg-gradient-to-b from-white/20 to-transparent" />
             </motion.button>
           </div>
