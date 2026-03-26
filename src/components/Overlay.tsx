@@ -1,5 +1,23 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
+
+function LogoShape({ isHolding }: { isHolding: boolean }) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  useFrame((state, delta) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += delta * (isHolding ? 3 : 1);
+      meshRef.current.rotation.x += delta * (isHolding ? 2 : 0.5);
+    }
+  });
+  return (
+    <mesh ref={meshRef}>
+      {isHolding ? <icosahedronGeometry args={[1.2, 0]} /> : <octahedronGeometry args={[1, 0]} />}
+      <meshBasicMaterial color={isHolding ? "#ff3366" : "#ffffff"} wireframe={!isHolding} />
+    </mesh>
+  );
+}
 
 interface OverlayProps {
   isHolding: boolean;
@@ -77,15 +95,15 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayPr
             className="flex flex-col items-start text-left max-w-md"
           >
             <div className="mb-12">
-              <span className="text-[10px] uppercase tracking-[0.5em] text-[#ff3366] block mb-2">Portfolio</span>
-              <h2 className="text-5xl md:text-6xl font-serif italic text-white leading-tight">Selected <br />Works</h2>
+              <span className={`text-[10px] uppercase tracking-[0.5em] text-[#ff3366] block mb-2 transition-all duration-700 ${isHolding ? 'font-mono' : ''}`}>Portfolio</span>
+              <h2 className={`text-5xl md:text-6xl text-white leading-tight transition-all duration-700 ${isHolding ? 'font-display font-bold uppercase tracking-tighter' : 'font-serif italic'}`}>Selected <br />Works</h2>
             </div>
             <div className="flex flex-col gap-6 w-full">
               {[
-                { name: 'Quantum UI Kit', year: '2025', type: 'Design System', num: '01' },
-                { name: 'Aether Analytics', year: '2024', type: 'Dashboard', num: '02' },
-                { name: 'Horizon Landing', year: '2024', type: 'Marketing', num: '03' },
-                { name: 'Nebula 3D', year: '2026', type: 'Experience', num: '04' }
+                { name: 'Next.js Multi-Page App', year: '2024', type: 'Full Stack', num: '01' },
+                { name: 'Weather App', year: '2024', type: 'API Integration', num: '02' },
+                { name: 'CIFAR-100 Classifier', year: '2023', type: 'Machine Learning', num: '03' },
+                { name: 'Clustering Models', year: '2023', type: 'Data Science', num: '04' }
               ].map((project) => (
                 <div 
                   key={project.name} 
@@ -114,28 +132,28 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayPr
             exit={{ opacity: 0, x: -40 }}
             className="max-w-md text-left"
           >
-            <h2 className="text-5xl font-serif italic text-white mb-8">The Studio</h2>
+            <h2 className={`text-5xl text-white mb-8 transition-all duration-700 ${isHolding ? 'font-display font-bold uppercase tracking-tighter' : 'font-serif italic'}`}>The Developer</h2>
             <div className="space-y-6">
-              <p className="text-white/70 text-base leading-relaxed tracking-wide font-light">
-                Nexus Code is a high-end digital agency based in Edmonton, Alberta. We specialize in crafting immersive UI/UX designs that bridge the gap between human emotion and digital precision.
+              <p className={`text-white/70 text-base leading-relaxed tracking-wide transition-all duration-700 ${isHolding ? 'font-mono text-sm' : 'font-light'}`}>
+                Nishant Bihola is a Full Stack Developer specializing in React, Next.js, Node.js, and Python with applied experience in machine learning and AI development.
               </p>
-              <p className="text-white/50 text-sm leading-relaxed tracking-wide font-light">
-                Our approach is rooted in minimalist aesthetics and maximalist functionality. We don't just build interfaces; we create digital ecosystems.
+              <p className={`text-white/50 text-sm leading-relaxed tracking-wide transition-all duration-700 ${isHolding ? 'font-mono text-xs' : 'font-light'}`}>
+                Strong background in building scalable web applications, RESTful APIs, and database systems. Proven ability to deliver production-ready solutions.
               </p>
             </div>
             <div className="mt-12 grid grid-cols-2 gap-8">
               <div>
-                <span className="text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Services</span>
-                <ul className="text-[11px] text-white/60 space-y-1 uppercase tracking-wider">
-                  <li>UI/UX Design</li>
-                  <li>Brand Strategy</li>
-                  <li>3D Interaction</li>
-                  <li>Mobile Experience</li>
+                <span className="text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Skills</span>
+                <ul className={`text-[11px] text-white/60 space-y-1 uppercase tracking-wider transition-all duration-700 ${isHolding ? 'font-mono' : ''}`}>
+                  <li>React & Next.js</li>
+                  <li>Node.js & Python</li>
+                  <li>Machine Learning</li>
+                  <li>SQL & NoSQL</li>
                 </ul>
               </div>
               <div>
                 <span className="text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Location</span>
-                <p className="text-[11px] text-white/60 uppercase tracking-wider">Edmonton, AB</p>
+                <p className={`text-[11px] text-white/60 uppercase tracking-wider transition-all duration-700 ${isHolding ? 'font-mono' : ''}`}>Edmonton, AB</p>
               </div>
             </div>
           </motion.div>
@@ -149,11 +167,11 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayPr
             exit={{ opacity: 0, x: -40 }}
             className="flex flex-col items-start text-left"
           >
-            <h2 className="text-5xl font-serif italic text-white mb-8">Get in <br />Touch</h2>
+            <h2 className={`text-5xl text-white mb-8 transition-all duration-700 ${isHolding ? 'font-display font-bold uppercase tracking-tighter' : 'font-serif italic'}`}>Get in <br />Touch</h2>
             <div className="flex flex-col gap-8">
               <div className="group cursor-pointer">
-                <span className="text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Inquiries</span>
-                <a href="mailto:nishant15bihola@gmail.com" className="text-3xl font-light text-white/80 group-hover:text-white transition-colors border-b border-white/20 pb-1 pointer-events-auto">nishant15bihola@gmail.com</a>
+                <span className="text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Email</span>
+                <a href="mailto:Biholanishant0@gmail.com" className={`text-2xl md:text-3xl font-light text-white/80 group-hover:text-white transition-all duration-700 border-b border-white/20 pb-1 pointer-events-auto ${isHolding ? 'font-mono tracking-tight' : ''}`}>Biholanishant0@gmail.com</a>
               </div>
               <div className="flex gap-12">
                 <div className="group cursor-pointer pointer-events-auto">
@@ -162,9 +180,18 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayPr
                     href="https://www.linkedin.com/in/nishantsinh-bihola-8bb500321" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-sm text-white/60 group-hover:text-white transition-colors uppercase tracking-widest"
+                    className={`text-sm text-white/60 group-hover:text-white transition-all duration-700 uppercase tracking-widest ${isHolding ? 'font-mono' : ''}`}
                   >
                     LinkedIn
+                  </a>
+                </div>
+                <div className="group cursor-pointer pointer-events-auto">
+                  <span className="text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Phone</span>
+                  <a 
+                    href="tel:825977460" 
+                    className={`text-sm text-white/60 group-hover:text-white transition-all duration-700 uppercase tracking-widest ${isHolding ? 'font-mono' : ''}`}
+                  >
+                    825-977-460
                   </a>
                 </div>
               </div>
@@ -180,11 +207,11 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayPr
             exit={{ opacity: 0 }}
             className="text-center"
           >
-            <h2 className="text-5xl md:text-7xl font-serif italic text-white mb-4 leading-tight">
-              Immersive <br />
-              UI/UX Design
+            <h2 className={`text-5xl md:text-7xl text-white mb-4 leading-tight transition-all duration-700 ${isHolding ? 'font-display font-bold uppercase tracking-tighter' : 'font-serif italic'}`}>
+              Nishant <br />
+              Bihola
             </h2>
-            <p className="text-white/40 text-sm tracking-widest uppercase">Nexus Code • Edmonton, AB</p>
+            <p className={`text-white/40 text-sm tracking-widest uppercase transition-all duration-700 ${isHolding ? 'font-mono' : ''}`}>Full Stack Developer • AI Specialist</p>
           </motion.div>
         );
     }
@@ -193,15 +220,23 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayPr
   return (
     <div 
       ref={scrollContainerRef}
+      id="main-scroll-container"
       className="relative z-10 w-full h-screen overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth"
     >
       {/* Hero Section */}
       <section className="relative w-full h-screen flex flex-col justify-between p-8 md:p-12 snap-start select-none">
         {/* Header */}
         <header className="flex justify-between items-start pointer-events-auto">
-          <div className="flex flex-col cursor-pointer" onClick={() => scrollToSection('home')}>
-            <span className="text-[10px] uppercase tracking-[0.3em] text-white/50 mb-1">UI/UX Studio</span>
-            <h1 className="text-2xl font-light tracking-tighter text-white">NEXUS CODE.</h1>
+          <div className="flex items-center cursor-pointer group" onClick={() => scrollToSection('home')}>
+            <div className="w-10 h-10 mr-3">
+              <Canvas camera={{ position: [0, 0, 3] }}>
+                <LogoShape isHolding={isHolding} />
+              </Canvas>
+            </div>
+            <div className="flex flex-col">
+              <span className={`text-[10px] uppercase tracking-[0.3em] text-white/50 mb-1 transition-all duration-700 ${isHolding ? 'font-mono text-[#ff3366]' : ''}`}>Studio</span>
+              <h1 className={`text-xl md:text-2xl font-light tracking-tighter text-white transition-all duration-700 ${isHolding ? 'font-display font-bold tracking-widest' : ''}`}>Nexus_dev.co</h1>
+            </div>
           </div>
           
           <nav className="flex gap-8 md:gap-12">
@@ -241,8 +276,8 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayPr
                     exit={{ opacity: 0, scale: 1.1 }}
                     className="flex flex-col items-center z-20"
                   >
-                    <h3 className="text-4xl md:text-5xl font-serif italic text-white mb-2">Evolution</h3>
-                    <p className="text-[#ff3366] text-[9px] md:text-[10px] tracking-[0.8em] uppercase animate-pulse">Neural Link Established</p>
+                    <h3 className={`text-4xl md:text-5xl text-white mb-2 transition-all duration-700 ${isHolding ? 'font-display font-bold uppercase tracking-tighter' : 'font-serif italic'}`}>Evolution</h3>
+                    <p className={`text-[#ff3366] text-[9px] md:text-[10px] tracking-[0.8em] uppercase animate-pulse transition-all duration-700 ${isHolding ? 'font-mono' : ''}`}>Neural Link Established</p>
                   </motion.div>
                 ) : activeSection === 'home' && (
                   <div className="pointer-events-auto">
@@ -374,40 +409,40 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayPr
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-32">
             {[
               { 
-                title: 'Quantum UI Kit', 
-                category: 'UI Components / Design System', 
-                img: 'https://image.pollinations.ai/prompt/modern%20dark%20mode%20saas%20dashboard%20ui%20ux%20design%20webflow%20dribbble%20high%20quality?width=800&height=1000&nologo=true',
-                desc: 'A comprehensive design system built for high-scale enterprise applications, focusing on modularity and accessibility.'
+                title: 'Next.js Multi-Page App', 
+                category: 'Full Stack Development', 
+                img: 'https://picsum.photos/seed/code/800/1000',
+                desc: 'Implemented dynamic routing, form validation, and optimized rendering strategies.'
               },
               { 
-                title: 'Horizon Landing', 
-                category: 'Landing Page / Marketing', 
-                img: 'https://image.pollinations.ai/prompt/minimalist%20landing%20page%20website%20design%20ui%20ux%20clean%20typography%20webflow%20high%20quality?width=800&height=1000&nologo=true',
-                desc: 'A high-conversion landing page for a next-gen cloud provider, featuring fluid animations and bold typography.'
+                title: 'Weather App', 
+                category: 'API Integration', 
+                img: 'https://picsum.photos/seed/weather/800/1000',
+                desc: 'Built a real-time weather comparison tool with API integration and caching.'
               },
               { 
-                title: 'Aether Analytics', 
-                category: 'Dashboard / Data Viz', 
-                img: 'https://image.pollinations.ai/prompt/crypto%20dashboard%20analytics%20ui%20ux%20design%20dark%20theme%20glassmorphism%20high%20quality?width=800&height=1000&nologo=true',
-                desc: 'Real-time data visualization platform for global logistics, simplifying complex supply chain metrics into actionable insights.'
+                title: 'CIFAR-100 Classifier', 
+                category: 'Machine Learning / CNN', 
+                img: 'https://picsum.photos/seed/ai/800/1000',
+                desc: 'Developed a Convolutional Neural Network using TensorFlow/Keras with performance tuning.'
               },
               { 
-                title: 'Nebula 3D', 
-                category: '3D Animated Project', 
-                img: 'https://image.pollinations.ai/prompt/creative%20agency%20portfolio%20website%20design%20ui%20ux%203d%20elements%20webflow%20high%20quality?width=800&height=1000&nologo=true',
-                desc: 'An immersive 3D web experience exploring spatial storytelling through interactive WebGL environments.'
+                title: 'Clustering Models', 
+                category: 'Data Science', 
+                img: 'https://picsum.photos/seed/data/800/1000',
+                desc: 'Applied K-Means, DBSCAN, ANN, and KNN for structured data analysis and predictive modeling.'
               },
               { 
-                title: 'Vortex Mobile', 
-                category: 'Mobile App / iOS', 
-                img: 'https://image.pollinations.ai/prompt/fintech%20mobile%20app%20ui%20ux%20design%20dashboard%20modern%20clean%20high%20quality?width=800&height=1000&nologo=true',
-                desc: 'A minimalist mobile banking experience that prioritizes speed and security without compromising on aesthetic elegance.'
+                title: 'Movie Recommendation', 
+                category: 'AI / Streamlit', 
+                img: 'https://picsum.photos/seed/movie/800/1000',
+                desc: 'Built a collaborative filtering engine deployed with Streamlit for personalized movie suggestions.'
               },
               { 
-                title: 'Cyber Core', 
-                category: 'WebGL / Creative Tech', 
-                img: 'https://image.pollinations.ai/prompt/ecommerce%20website%20design%20ui%20ux%20modern%20fashion%20landing%20page%20high%20quality?width=800&height=1000&nologo=true',
-                desc: 'Pushing the boundaries of browser-based graphics with a generative art installation powered by custom shaders.'
+                title: 'Webflow CMS', 
+                category: 'Web Development', 
+                img: 'https://picsum.photos/seed/design/800/1000',
+                desc: 'Developed responsive CMS-based websites, improved SEO performance, and optimized UI/UX.'
               }
             ].map((project, i) => (
               <motion.div 
@@ -434,10 +469,10 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayPr
                 </motion.div>
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-3xl font-serif italic text-white mb-2">{project.title}</h3>
-                    <p className="text-white/40 text-xs uppercase tracking-widest">{project.category}</p>
+                    <h3 className={`text-3xl mb-2 transition-all duration-700 ${isHolding ? 'font-display font-bold uppercase tracking-tighter text-white' : 'font-serif italic text-white'}`}>{project.title}</h3>
+                    <p className={`text-xs uppercase tracking-widest transition-all duration-700 ${isHolding ? 'font-mono text-[#ff3366]' : 'text-white/40'}`}>{project.category}</p>
                   </div>
-                  <p className="text-white/30 text-[11px] max-w-[180px] text-right leading-relaxed">
+                  <p className={`text-[11px] max-w-[180px] text-right leading-relaxed transition-all duration-700 ${isHolding ? 'font-mono text-white/50' : 'text-white/30'}`}>
                     {project.desc}
                   </p>
                 </div>

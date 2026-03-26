@@ -6,53 +6,60 @@ import * as THREE from 'three';
 
 interface ExperienceProps {
   isHolding: boolean;
-  shapeIndex: number;
 }
 
-function Diamond({ isHolding, shapeIndex }: { isHolding: boolean; shapeIndex: number }) {
+function InteractiveShape({ isHolding }: { isHolding: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const targetRotation = useRef({ x: 0, y: 0 });
+  const currentScroll = useRef(0);
 
   useFrame((state, delta) => {
     if (meshRef.current) {
-      // Rotate faster when holding
-      meshRef.current.rotation.y += delta * (isHolding ? 2 : 0.2);
-      meshRef.current.rotation.x += delta * (isHolding ? 1.5 : 0.1);
+      // Read scroll position for scroll interactivity
+      const scrollContainer = document.getElementById('main-scroll-container');
+      const scrollY = scrollContainer ? scrollContainer.scrollTop : 0;
       
-      // Scale up slightly when holding
-      const targetScale = isHolding ? 1.5 : 1;
-      meshRef.current.scale.setScalar(
-        meshRef.current.scale.x + (targetScale - meshRef.current.scale.x) * 0.1
+      // Smooth scroll delta
+      currentScroll.current = THREE.MathUtils.lerp(currentScroll.current, scrollY, 0.1);
+      const scrollRotation = currentScroll.current * 0.002;
+
+      // Cursor interactivity (Parallax)
+      targetRotation.current.x = (state.pointer.y * Math.PI) / 4;
+      targetRotation.current.y = (state.pointer.x * Math.PI) / 4;
+
+      // Apply rotations (Base + Cursor + Scroll)
+      meshRef.current.rotation.x = THREE.MathUtils.lerp(
+        meshRef.current.rotation.x, 
+        targetRotation.current.x + (isHolding ? delta * 2 : delta * 0.5), 
+        0.1
       );
+      
+      meshRef.current.rotation.y = THREE.MathUtils.lerp(
+        meshRef.current.rotation.y, 
+        targetRotation.current.y + scrollRotation + (isHolding ? delta * 3 : delta * 0.5), 
+        0.1
+      );
+
+      // Scale interactivity
+      const targetScale = isHolding ? 1.3 : 1;
+      meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
     }
   });
 
-  const shapes = [
-    <coneGeometry key="triangle" args={[2, 3, 3, 1]} />, // Clean 3D Triangle
-    <boxGeometry key="cube" args={[2.2, 2.2, 2.2]} />, // Clean Cube
-    <torusGeometry key="torus" args={[1.5, 0.5, 32, 64]} />, // Clean Torus
-    <icosahedronGeometry key="icosahedron" args={[2, 0]} /> // Clean Icosahedron
-  ];
-  
-  const colors = [
-    "#00ffff", // Cyan
-    "#b026ff", // Purple
-    "#ffea00", // Yellow
-    "#39ff14"  // Neon Green
-  ];
-
-  const currentShape = shapes[shapeIndex % shapes.length];
-  const currentColor = colors[shapeIndex % colors.length];
-
   return (
     <Float speed={isHolding ? 5 : 2} rotationIntensity={isHolding ? 2 : 0.5} floatIntensity={isHolding ? 5 : 2}>
-      <mesh ref={meshRef} scale={[1, 1, 1]}>
-        {currentShape}
+      <mesh ref={meshRef}>
+        {isHolding ? (
+          <icosahedronGeometry args={[2, 0]} /> // Morphs to Icosahedron on hold
+        ) : (
+          <coneGeometry args={[2, 3, 3, 1]} /> // Starts/Reverts to Triangle
+        )}
         <MeshDistortMaterial
-          color={isHolding ? "#ff3366" : currentColor}
+          color={isHolding ? "#ff3366" : "#00ffff"}
           envMapIntensity={2}
-          metalness={0.7}
+          metalness={0.8}
           roughness={0.1}
-          distort={isHolding ? 0.8 : 0}
+          distort={isHolding ? 0.6 : 0}
           speed={isHolding ? 6 : 0}
         />
       </mesh>
@@ -60,23 +67,23 @@ function Diamond({ isHolding, shapeIndex }: { isHolding: boolean; shapeIndex: nu
   );
 }
 
-export default function Experience({ isHolding, shapeIndex }: ExperienceProps) {
+export default function Experience({ isHolding }: ExperienceProps) {
   return (
-    <div className="fixed inset-0 z-0 bg-[#0a0a0a]">
+    <div className="fixed inset-0 z-0 pointer-events-none">
       <Suspense fallback={
         <div className="w-full h-full flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" />
         </div>
       }>
         <div className="w-full h-full relative">
+          {/* Removed bg-[#0a0a0a] and <color attach="background" /> to allow App.tsx dynamic bg to show */}
           <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
-            <color attach="background" args={['#0a0a0a']} />
             <ambientLight intensity={2} />
             <directionalLight position={[10, 10, 10]} intensity={3} color="#ffffff" />
             <directionalLight position={[-10, -10, -10]} intensity={2} color="#ff3366" />
             <pointLight position={[0, 5, -5]} intensity={5} color="#00ffff" />
             
-            <Diamond isHolding={isHolding} shapeIndex={shapeIndex} />
+            <InteractiveShape isHolding={isHolding} />
             
             <ContactShadows 
               position={[0, -3, 0]} 
