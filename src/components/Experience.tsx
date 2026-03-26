@@ -6,9 +6,26 @@ import * as THREE from 'three';
 
 interface ExperienceProps {
   isHolding: boolean;
+  shapeIndex: number;
 }
 
-function InteractiveShape({ isHolding }: { isHolding: boolean }) {
+const holdShapes = [
+  <boxGeometry key="box" args={[1.8, 1.8, 1.8]} />,
+  <torusGeometry key="torus" args={[1.2, 0.4, 32, 64]} />,
+  <icosahedronGeometry key="icosa" args={[1.8, 0]} />,
+  <octahedronGeometry key="octa" args={[2, 0]} />,
+  <dodecahedronGeometry key="dodeca" args={[1.5, 0]} />
+];
+
+const holdColors = [
+  "#ff0000", // Red
+  "#ffea00", // Yellow
+  "#ff3366", // Pink
+  "#b026ff", // Purple
+  "#ff8800"  // Orange
+];
+
+function InteractiveShape({ isHolding, shapeIndex }: { isHolding: boolean, shapeIndex: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const targetRotation = useRef({ x: 0, y: 0 });
   const currentScroll = useRef(0);
@@ -46,16 +63,15 @@ function InteractiveShape({ isHolding }: { isHolding: boolean }) {
     }
   });
 
+  const currentShape = holdShapes[shapeIndex % holdShapes.length];
+  const currentColor = holdColors[shapeIndex % holdColors.length];
+
   return (
     <Float speed={isHolding ? 5 : 2} rotationIntensity={isHolding ? 2 : 0.5} floatIntensity={isHolding ? 5 : 2}>
       <mesh ref={meshRef}>
-        {isHolding ? (
-          <icosahedronGeometry args={[2, 0]} /> // Morphs to Icosahedron on hold
-        ) : (
-          <coneGeometry args={[2, 3, 3, 1]} /> // Starts/Reverts to Triangle
-        )}
+        {isHolding ? currentShape : <coneGeometry args={[2, 3, 3, 1]} />}
         <MeshDistortMaterial
-          color={isHolding ? "#ff3366" : "#00ffff"}
+          color={isHolding ? currentColor : "#00ffff"}
           envMapIntensity={2}
           metalness={0.8}
           roughness={0.1}
@@ -67,7 +83,9 @@ function InteractiveShape({ isHolding }: { isHolding: boolean }) {
   );
 }
 
-export default function Experience({ isHolding }: ExperienceProps) {
+export default function Experience({ isHolding, shapeIndex }: ExperienceProps) {
+  const currentColor = holdColors[shapeIndex % holdColors.length];
+
   return (
     <div className="fixed inset-0 z-0 pointer-events-none">
       <Suspense fallback={
@@ -80,10 +98,10 @@ export default function Experience({ isHolding }: ExperienceProps) {
           <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
             <ambientLight intensity={2} />
             <directionalLight position={[10, 10, 10]} intensity={3} color="#ffffff" />
-            <directionalLight position={[-10, -10, -10]} intensity={2} color="#ff3366" />
+            <directionalLight position={[-10, -10, -10]} intensity={2} color={isHolding ? currentColor : "#ff3366"} />
             <pointLight position={[0, 5, -5]} intensity={5} color="#00ffff" />
             
-            <InteractiveShape isHolding={isHolding} />
+            <InteractiveShape isHolding={isHolding} shapeIndex={shapeIndex} />
             
             <ContactShadows 
               position={[0, -3, 0]} 
@@ -91,7 +109,7 @@ export default function Experience({ isHolding }: ExperienceProps) {
               scale={10} 
               blur={2} 
               far={4} 
-              color={isHolding ? "#ff3366" : "#000000"}
+              color={isHolding ? currentColor : "#000000"}
             />
           </Canvas>
           
@@ -105,7 +123,8 @@ export default function Experience({ isHolding }: ExperienceProps) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="absolute inset-0 bg-[#ff3366]/5 mix-blend-overlay backdrop-blur-[2px]"
+                  className="absolute inset-0 mix-blend-overlay backdrop-blur-[2px]"
+                  style={{ backgroundColor: `${currentColor}15` }}
                 />
               )}
             </AnimatePresence>
