@@ -405,6 +405,174 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
         </footer>
       </section>
 
+      {/* ─── Intro / Marquee + Stats Section ─── */}
+      <section className="relative w-full bg-[#080808] overflow-hidden snap-start z-20 flex flex-col justify-between py-0">
+
+        {/* ── Infinite marquee ticker ── */}
+        <div className="relative w-full overflow-hidden border-y border-white/5 py-5 group">
+          <div className="flex whitespace-nowrap animate-marquee group-hover:[animation-play-state:paused]">
+            {[
+              'React', 'Next.js', 'Three.js', 'TypeScript', 'Node.js',
+              'AI / ML', 'TensorFlow', 'Tailwind', 'Framer Motion', 'WebGL',
+              'Python', 'MongoDB', 'PostgreSQL', 'AWS', 'Vercel',
+            ].concat([
+              'React', 'Next.js', 'Three.js', 'TypeScript', 'Node.js',
+              'AI / ML', 'TensorFlow', 'Tailwind', 'Framer Motion', 'WebGL',
+              'Python', 'MongoDB', 'PostgreSQL', 'AWS', 'Vercel',
+            ]).map((tech, i) => (
+              <span key={i} className="inline-flex items-center gap-6 mx-6">
+                <span className="text-[10px] uppercase tracking-[0.5em] text-white/20 font-mono hover:text-[#887bff] transition-colors duration-300 cursor-default">
+                  {tech}
+                </span>
+                <span className="text-[#ff3366]/30 text-xs">✦</span>
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Stats / Numbers ── */}
+        <div className="px-8 md:px-24 pt-20 pb-10 max-w-7xl mx-auto w-full">
+          <motion.div
+            className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0 border-b border-white/5 pb-20"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12 } } }}
+          >
+            {[
+              { num: '6+',  label: 'Projects Shipped',    sub: 'Full-stack production' },
+              { num: '2+',  label: 'Years Experience',    sub: 'Building digital products' },
+              { num: '3',   label: 'AI Models Built',     sub: 'CNN · KNN · Clustering' },
+              { num: '∞',   label: 'Ideas In Pipeline',   sub: 'Always evolving' },
+            ].map((stat) => (
+              <motion.div
+                key={stat.label}
+                variants={{
+                  hidden: { opacity: 0, y: 40 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] } },
+                }}
+                className="flex flex-col md:border-r border-white/5 md:px-12 first:md:pl-0 last:md:border-r-0 group"
+              >
+                <div className="overflow-hidden mb-2">
+                  <motion.span
+                    className="block text-5xl md:text-7xl font-display font-bold tracking-tighter text-white group-hover:text-[#887bff] transition-colors duration-500"
+                    whileInView={{ opacity: [0, 1] }}
+                    viewport={{ once: true }}
+                  >
+                    {stat.num}
+                  </motion.span>
+                </div>
+                <span className="text-[10px] uppercase tracking-[0.4em] text-white/50 font-mono mb-1">
+                  {stat.label}
+                </span>
+                <span className="text-[9px] text-white/20 font-mono">
+                  {stat.sub}
+                </span>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* ── Kinetic typography manifesto ── */}
+          <div className="pt-20 pb-24">
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.5 }}
+            >
+              {/* Label */}
+              <div className="overflow-hidden mb-8">
+                <motion.span
+                  initial={{ y: '110%' }}
+                  whileInView={{ y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                  className="block text-[10px] uppercase tracking-[0.8em] text-[#ff3366] font-mono"
+                >
+                  Philosophy
+                </motion.span>
+              </div>
+
+              {/* Big statement — each word is an independent reveal */}
+              <div className="flex flex-wrap gap-x-4 gap-y-2 mb-12">
+                {[
+                  { word: 'Code', accent: false },
+                  { word: 'is',   accent: false },
+                  { word: 'craft.', accent: true  },
+                  { word: 'Design', accent: false },
+                  { word: 'is',    accent: false },
+                  { word: 'intent.', accent: true },
+                  { word: 'AI',    accent: false },
+                  { word: 'is',    accent: false },
+                  { word: 'the',   accent: false },
+                  { word: 'edge.', accent: true  },
+                ].map(({ word, accent }, i) => (
+                  <div key={i} className="overflow-hidden">
+                    <motion.span
+                      initial={{ y: '115%' }}
+                      whileInView={{ y: 0 }}
+                      viewport={{ once: true, margin: '-40px' }}
+                      transition={{
+                        duration: 1,
+                        delay: i * 0.07,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      className={`block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif italic leading-tight ${
+                        accent ? 'text-[#887bff]' : 'text-white/80'
+                      }`}
+                    >
+                      {word}
+                    </motion.span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Supporting text + rule */}
+              <div className="flex flex-col md:flex-row gap-12 items-start">
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ originX: 0 }}
+                  className="hidden md:block w-24 h-px bg-gradient-to-r from-[#887bff]/60 to-transparent mt-4 flex-shrink-0"
+                />
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.9, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  className="text-white/35 text-sm leading-relaxed max-w-md font-sans tracking-wide"
+                >
+                  I build digital experiences that sit at the intersection of engineering precision
+                  and creative vision. Every project is an opportunity to push what's possible — 
+                  faster, smarter, more beautiful.
+                </motion.p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* ── Second marquee (reversed, slower) ── */}
+        <div className="relative w-full overflow-hidden border-t border-white/5 py-5">
+          <div className="flex whitespace-nowrap animate-marquee-reverse">
+            {[
+              'Full Stack Dev', 'UI / UX', 'Machine Learning', '3D Interactive',
+              'AI Integration', 'Data Science', 'WebGL', 'Cloud Architecture',
+              'Full Stack Dev', 'UI / UX', 'Machine Learning', '3D Interactive',
+              'AI Integration', 'Data Science', 'WebGL', 'Cloud Architecture',
+            ].map((label, i) => (
+              <span key={i} className="inline-flex items-center gap-6 mx-8">
+                <span className="text-[9px] uppercase tracking-[0.6em] text-white/10 font-mono">
+                  {label}
+                </span>
+                <span className="text-[#887bff]/20 text-xs">◆</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ─── About / Services Section ─── */}
       <section
         ref={servicesSectionRef}
