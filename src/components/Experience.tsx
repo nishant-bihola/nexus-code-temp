@@ -19,7 +19,7 @@ const holdShapes = [
 ];
 
 const holdColors = [
-  "#00ffff", // Cyan (for initial cone)
+  "#887bffff", // Cyan (for initial cone)
   "#ff0000", // Red
   "#ffea00", // Yellow
   "#ff3366", // Pink
@@ -43,7 +43,7 @@ function InteractiveShape({ isHolding, shapeIndex }: { isHolding: boolean, shape
       // Read scroll position for scroll interactivity
       const scrollContainer = document.getElementById('main-scroll-container');
       const scrollY = scrollContainer ? scrollContainer.scrollTop : 0;
-      
+
       // Smooth scroll delta
       currentScroll.current = THREE.MathUtils.lerp(currentScroll.current, scrollY, 0.05);
       const scrollRotation = currentScroll.current * 0.002;
@@ -52,21 +52,21 @@ function InteractiveShape({ isHolding, shapeIndex }: { isHolding: boolean, shape
       // Cursor interactivity (Parallax)
       targetRotation.current.x = (state.pointer.y * Math.PI) / 6;
       targetRotation.current.y = (state.pointer.x * Math.PI) / 6;
-      
+
       targetPosition.current.x = state.pointer.x * 1.2;
       targetPosition.current.y = state.pointer.y * 1.2;
 
       // Apply rotations (Base + Cursor + Scroll)
       // INCREASED SPEED during hold phase
       meshRef.current.rotation.x = THREE.MathUtils.lerp(
-        meshRef.current.rotation.x, 
-        targetRotation.current.x + (isHolding ? delta * 8 : delta * 0.5), 
+        meshRef.current.rotation.x,
+        targetRotation.current.x + (isHolding ? delta * 8 : delta * 0.5),
         0.08
       );
-      
+
       meshRef.current.rotation.y = THREE.MathUtils.lerp(
-        meshRef.current.rotation.y, 
-        targetRotation.current.y + scrollRotation + (isHolding ? delta * 10 : delta * 0.5), 
+        meshRef.current.rotation.y,
+        targetRotation.current.y + scrollRotation + (isHolding ? delta * 10 : delta * 0.5),
         0.08
       );
 
@@ -76,7 +76,7 @@ function InteractiveShape({ isHolding, shapeIndex }: { isHolding: boolean, shape
         targetPosition.current.x,
         0.05
       );
-      
+
       meshRef.current.position.y = THREE.MathUtils.lerp(
         meshRef.current.position.y,
         targetPosition.current.y + Math.sin(state.clock.elapsedTime) * 0.1 - scrollYOffset,
@@ -99,7 +99,7 @@ function InteractiveShape({ isHolding, shapeIndex }: { isHolding: boolean, shape
       materialRef.current.speed = THREE.MathUtils.lerp(materialRef.current.speed, targetSpeed, 0.05);
       materialRef.current.roughness = THREE.MathUtils.lerp(materialRef.current.roughness, targetRoughness, 0.05);
       materialRef.current.metalness = THREE.MathUtils.lerp(materialRef.current.metalness, targetMetalness, 0.05);
-      
+
       // Smoothly interpolate color
       materialRef.current.color.lerp(isHolding ? targetColor : baseColor, 0.08);
     }
@@ -143,23 +143,23 @@ export default function Experience({ isHolding, shapeIndex }: ExperienceProps) {
             <directionalLight position={[10, 10, 10]} intensity={3} color="#ffffff" />
             <directionalLight position={[-10, -10, -10]} intensity={2} color={isHolding ? currentColor : "#ff3366"} />
             <pointLight position={[0, 5, -5]} intensity={5} color="#00ffff" />
-            
+
             <InteractiveShape isHolding={isHolding} shapeIndex={shapeIndex} />
-            
-            <ContactShadows 
-              position={[0, -3, 0]} 
-              opacity={0.5} 
-              scale={10} 
-              blur={2} 
-              far={4} 
+
+            <ContactShadows
+              position={[0, -3, 0]}
+              opacity={0.5}
+              scale={10}
+              blur={2}
+              far={4}
               color={isHolding ? currentColor : "#000000"}
             />
           </Canvas>
-          
+
           {/* Post-processing-like overlays to maintain the aesthetic */}
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
-            
+
             <AnimatePresence>
               {isHolding && (
                 <motion.div
