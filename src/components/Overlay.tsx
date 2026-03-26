@@ -46,6 +46,7 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
   const [activeSection, setActiveSection] = useState<Section>('home');
   const [clickedProject, setClickedProject] = useState<string | null>(null);
   const [isMorphing, setIsMorphing] = useState(false);
+  const [exploringService, setExploringService] = useState<number | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const projectsSectionRef = useRef<HTMLDivElement>(null);
   const servicesSectionRef = useRef<HTMLDivElement>(null);
@@ -104,34 +105,35 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
         return (
           <motion.div
             key="projects"
-            initial={{ opacity: 0, y: 40, filter: 'blur(10px)', scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
-            exit={{ opacity: 0, y: -40, filter: 'blur(10px)', scale: 0.95 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col items-start text-left max-w-md w-full"
+            initial={{ opacity: 0, x: -20, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, x: 20, filter: 'blur(10px)' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col items-start text-left max-w-xl w-full"
           >
-            <div className="mb-8 md:mb-12">
-              <span className={`text-[8px] md:text-[10px] uppercase tracking-[0.5em] text-[#ff3366] block mb-2 transition-all duration-700 ${isHolding ? 'font-mono' : ''}`}>Portfolio</span>
-              <h2 className={`text-4xl sm:text-5xl md:text-6xl text-white leading-tight transition-all duration-700 ${isHolding ? 'font-display font-bold uppercase tracking-tighter' : 'font-serif italic'}`}>Selected <br />Works</h2>
+            <div className="mb-10">
+              <span className="text-[10px] uppercase tracking-[0.6em] text-[#ff3366] font-mono block mb-3">Portfolio</span>
+              <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter text-white leading-[0.9]">Selected<br /><span className="text-white/30 italic font-serif font-light">Works</span></h2>
             </div>
-            <div className="flex flex-col gap-4 md:gap-6 w-full">
+            <div className="flex flex-col w-full group/list">
               {[
-                { name: 'Next.js Multi-Page App', year: '2024', type: 'Full Stack', num: '01' },
-                { name: 'Weather App', year: '2024', type: 'API Integration', num: '02' },
-                { name: 'CIFAR-100 Classifier', year: '2023', type: 'Machine Learning', num: '03' },
-                { name: 'Clustering Models', year: '2023', type: 'Data Science', num: '04' }
+                { name: 'Multi-Page App', year: '2024', type: 'Next.js', num: '01' },
+                { name: 'Weather API', year: '2024', type: 'React', num: '02' },
+                { name: 'CIFAR-100', year: '2023', type: 'ML/CNN', num: '03' },
+                { name: 'Clustering', year: '2023', type: 'Data Sci', num: '04' }
               ].map((project) => (
                 <div 
                   key={project.name} 
                   onClick={scrollToProjects}
-                  className="group cursor-pointer border-b border-white/5 pb-4 md:pb-6 hover:border-white/20 transition-all duration-500 flex items-center gap-4 md:gap-6"
+                  className="group cursor-pointer border-b border-white/10 py-5 transition-all duration-500 flex items-center gap-6 hover:pl-4"
                 >
-                  <span className="text-[8px] md:text-[10px] font-mono text-white/20 group-hover:text-[#ff3366] transition-colors">{project.num}</span>
-                  <div className="flex-1 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
-                    <span className="text-xl sm:text-2xl md:text-3xl font-light text-white/60 group-hover:text-white group-hover:translate-x-2 transition-all duration-500">{project.name}</span>
-                    <div className="flex sm:flex-col items-start sm:items-end gap-2 sm:gap-0 opacity-60 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      <span className="text-[7px] md:text-[8px] uppercase tracking-widest text-[#ff3366]">{project.type}</span>
-                      <span className="text-[7px] md:text-[8px] uppercase tracking-widest text-white/30">{project.year}</span>
+                  <span className="text-[10px] font-mono text-white/20 group-hover:text-[#ff3366] transition-colors">{project.num}</span>
+                  <div className="flex-1 flex justify-between items-center">
+                    <span className="text-2xl md:text-3xl font-display font-medium text-white/50 group-hover:text-white transition-all duration-500">{project.name}</span>
+                    <div className="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0">
+                      <span className="text-[9px] uppercase tracking-widest text-[#ff3366] font-mono">{project.type}</span>
+                      <div className="w-8 h-[1px] bg-white/20" />
+                      <span className="text-[9px] uppercase tracking-widest text-white/30 font-mono">{project.year}</span>
                     </div>
                   </div>
                 </div>
@@ -143,34 +145,31 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
         return (
           <motion.div
             key="about"
-            initial={{ opacity: 0, y: 40, filter: 'blur(10px)', scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
-            exit={{ opacity: 0, y: -40, filter: 'blur(10px)', scale: 0.95 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-md text-left w-full"
+            initial={{ opacity: 0, x: -20, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, x: 20, filter: 'blur(10px)' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-xl text-left w-full"
           >
-            <h2 className={`text-4xl sm:text-5xl text-white mb-6 md:mb-8 transition-all duration-700 ${isHolding ? 'font-display font-bold uppercase tracking-tighter' : 'font-serif italic'}`}>The Developer</h2>
-            <div className="space-y-4 md:space-y-6">
-              <p className={`text-white/70 text-sm md:text-base leading-relaxed tracking-wide transition-all duration-700 ${isHolding ? 'font-mono text-xs md:text-sm' : 'font-light'}`}>
-                Nishant Bihola is a Full Stack Developer specializing in React, Next.js, Node.js, and Python with applied experience in machine learning and AI development.
+            <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter text-white mb-10 leading-none">The <br /><span className="text-white/30 italic font-serif font-light">Vision</span></h2>
+            <div className="space-y-8">
+              <p className="text-white/80 text-lg md:text-xl leading-relaxed font-sans font-light">
+                Nishant Bihola is a <span className="text-white font-medium">Full Stack Developer</span> & <span className="text-[#ff3366] font-medium">AI Specialist</span> bridging the gap between sophisticated algorithms and immersive digital experiences.
               </p>
-              <p className={`text-white/50 text-xs md:text-sm leading-relaxed tracking-wide transition-all duration-700 ${isHolding ? 'font-mono text-[10px] md:text-xs' : 'font-light'}`}>
-                Strong background in building scalable web applications, RESTful APIs, and database systems. Proven ability to deliver production-ready solutions.
-              </p>
-            </div>
-            <div className="mt-8 md:mt-12 grid grid-cols-2 gap-6 md:gap-8">
-              <div>
-                <span className="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Skills</span>
-                <ul className={`text-[10px] md:text-[11px] text-white/60 space-y-1 uppercase tracking-wider transition-all duration-700 ${isHolding ? 'font-mono' : ''}`}>
-                  <li>React & Next.js</li>
-                  <li>Node.js & Python</li>
-                  <li>Machine Learning</li>
-                  <li>SQL & NoSQL</li>
-                </ul>
-              </div>
-              <div>
-                <span className="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Location</span>
-                <p className={`text-[10px] md:text-[11px] text-white/60 uppercase tracking-wider transition-all duration-700 ${isHolding ? 'font-mono' : ''}`}>Edmonton, AB</p>
+              <div className="grid grid-cols-2 gap-12 pt-8 border-t border-white/5">
+                <div>
+                  <span className="text-[10px] uppercase tracking-[0.4em] text-[#ff3366] font-mono block mb-4">Expertise</span>
+                  <ul className="text-xs text-white/50 space-y-2 uppercase tracking-widest font-mono">
+                    <li className="flex items-center gap-2"><div className="w-1 h-1 bg-[#ff3366] rounded-full" /> React & Next.js</li>
+                    <li className="flex items-center gap-2"><div className="w-1 h-1 bg-[#ff3366] rounded-full" /> Neural Networks</li>
+                    <li className="flex items-center gap-2"><div className="w-1 h-1 bg-[#ff3366] rounded-full" /> 3D Interaction</li>
+                    <li className="flex items-center gap-2"><div className="w-1 h-1 bg-[#ff3366] rounded-full" /> Cloud Arch</li>
+                  </ul>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase tracking-[0.4em] text-white/30 font-mono block mb-4">Genesis</span>
+                  <p className="text-xs text-white/50 uppercase tracking-widest font-mono leading-relaxed">Based in Edmonton, AB.<br />Crafting global solutions.</p>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -179,35 +178,35 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
         return (
           <motion.div
             key="contact"
-            initial={{ opacity: 0, y: 40, filter: 'blur(10px)', scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
-            exit={{ opacity: 0, y: -40, filter: 'blur(10px)', scale: 0.95 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col items-start text-left w-full"
+            initial={{ opacity: 0, x: -20, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, x: 20, filter: 'blur(10px)' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col items-start text-left w-full max-w-xl"
           >
-            <h2 className={`text-4xl sm:text-5xl text-white mb-6 md:mb-8 transition-all duration-700 ${isHolding ? 'font-display font-bold uppercase tracking-tighter' : 'font-serif italic'}`}>Start a <br />Project</h2>
-            <div className="flex flex-col gap-6 md:gap-8 w-full">
-              <div className="group cursor-pointer w-full overflow-hidden">
-                <span className="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Email</span>
-                <a href="mailto:Biholanishant0@gmail.com" className={`text-lg sm:text-2xl md:text-3xl font-light text-white/80 group-hover:text-white transition-all duration-700 border-b border-white/20 pb-1 pointer-events-auto break-all ${isHolding ? 'font-mono tracking-tight' : ''}`}>Biholanishant0@gmail.com</a>
+            <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter text-white mb-10 leading-none">Start a <br /><span className="text-[#ff3366] italic font-serif font-light">Conversation</span></h2>
+            <div className="flex flex-col gap-10 w-full">
+              <div className="group cursor-pointer w-full">
+                <span className="text-[10px] uppercase tracking-[0.4em] text-white/30 font-mono block mb-3">Direct Neural Link</span>
+                <a href="mailto:Biholanishant0@gmail.com" className="text-2xl md:text-4xl font-display font-light text-white/70 group-hover:text-white transition-all duration-700 border-b border-white/10 pb-2 pointer-events-auto block w-fit">Biholanishant0@gmail.com</a>
               </div>
-              <div className="flex flex-col sm:flex-row gap-6 sm:gap-12">
+              <div className="flex flex-wrap gap-12">
                 <div className="group cursor-pointer pointer-events-auto">
-                  <span className="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Connect</span>
+                  <span className="text-[10px] uppercase tracking-[0.4em] text-white/30 font-mono block mb-3">Social</span>
                   <a 
                     href="https://www.linkedin.com/in/nishantsinh-bihola-8bb500321" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className={`text-xs sm:text-sm text-white/60 group-hover:text-white transition-all duration-700 uppercase tracking-widest ${isHolding ? 'font-mono' : ''}`}
+                    className="text-xs text-white/50 group-hover:text-[#ff3366] transition-all duration-500 uppercase tracking-widest font-mono"
                   >
-                    LinkedIn
+                    LinkedIn ↗
                   </a>
                 </div>
                 <div className="group cursor-pointer pointer-events-auto">
-                  <span className="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Phone</span>
+                  <span className="text-[10px] uppercase tracking-[0.4em] text-white/30 font-mono block mb-3">Voice</span>
                   <a 
                     href="tel:825977460" 
-                    className={`text-xs sm:text-sm text-white/60 group-hover:text-white transition-all duration-700 uppercase tracking-widest ${isHolding ? 'font-mono' : ''}`}
+                    className="text-xs text-white/50 group-hover:text-[#ff3366] transition-all duration-500 uppercase tracking-widest font-mono"
                   >
                     825-977-460
                   </a>
@@ -243,36 +242,37 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
       className="relative z-10 w-full h-screen overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth"
     >
       <motion.div
-        className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#ff3366] to-[#b026ff] origin-left z-[100]"
+        className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#ff3366] via-[#b026ff] to-[#00ffff] origin-left z-[100] shadow-[0_0_10px_rgba(255,51,102,0.3)]"
         style={{ scaleX: scrollYProgress }}
       />
       {/* Hero Section */}
       <section className="relative w-full min-h-screen flex flex-col justify-between p-4 sm:p-8 md:p-12 snap-start select-none overflow-hidden">
         {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-center md:items-start gap-6 md:gap-0 pointer-events-auto w-full">
+        <header className="fixed top-0 left-0 right-0 px-6 sm:px-12 py-6 flex flex-col md:flex-row justify-between items-center z-[90] glass-dark border-b border-white/5 backdrop-blur-md">
           <div className="flex items-center cursor-pointer group" onClick={() => scrollToSection('home')}>
-            <div className="w-8 h-8 md:w-10 md:h-10 mr-2 md:mr-3">
+            <div className="w-8 h-8 md:w-10 md:h-10 mr-3 overflow-visible">
               <Canvas camera={{ position: [0, 0, 3] }}>
                 <LogoShape isHolding={isHolding} shapeIndex={shapeIndex} />
               </Canvas>
             </div>
             <div className="flex flex-col">
-              <span className={`text-[8px] md:text-[10px] uppercase tracking-[0.3em] text-white/50 mb-1 transition-all duration-700 ${isHolding ? 'font-mono text-[#ff3366]' : ''}`}>Studio</span>
-              <h1 className={`text-lg sm:text-xl md:text-2xl font-light tracking-tighter text-white transition-all duration-700 ${isHolding ? 'font-display font-bold tracking-widest' : ''}`}>Nexus_dev.co</h1>
+              <span className={`text-[8px] md:text-[9px] uppercase tracking-[0.4em] text-[#ff3366] font-mono mb-0.5 transition-all duration-700 ${isHolding ? 'letter-spacing-widest' : ''}`}>Nexus Studio</span>
+              <h1 className={`text-lg sm:text-xl font-display font-medium tracking-tight text-white transition-all duration-700 ${isHolding ? 'scale-105' : ''}`}>Nexus_dev.co</h1>
             </div>
           </div>
           
-          <nav className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 lg:gap-12 w-full md:w-auto">
+          <nav className="flex items-center gap-6 sm:gap-8 md:gap-10 mt-4 md:mt-0">
             {(['projects', 'about', 'contact'] as Section[]).map((item) => (
               <button 
                 key={item} 
                 onClick={() => scrollToSection(item)}
-                className={`text-[9px] sm:text-[10px] md:text-[11px] uppercase tracking-[0.2em] hover:tracking-[0.3em] transition-all duration-300 cursor-pointer relative ${activeSection === item ? 'text-white' : 'text-white/50 hover:text-white'}`}
+                className={`text-[9px] sm:text-[10px] uppercase tracking-[0.25em] transition-all duration-500 cursor-pointer relative py-2 group ${activeSection === item ? 'text-white' : 'text-white/40 hover:text-white'}`}
               >
-                {item === 'contact' ? 'Start a Project' : item}
-                {activeSection === item && (
-                  <motion.div layoutId="nav-underline" className="absolute -bottom-1 left-0 right-0 h-[1px] bg-white" />
-                )}
+                <span className="relative z-10">{item === 'contact' ? 'Connect' : item}</span>
+                <motion.div 
+                  className={`absolute bottom-0 left-0 h-[1px] bg-[#ff3366] transition-all duration-500 ${activeSection === item ? 'w-full' : 'w-0 group-hover:w-1/2'}`}
+                  layoutId={activeSection === item ? "nav-underline" : undefined}
+                />
               </button>
             ))}
           </nav>
@@ -313,15 +313,15 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
         </div>
 
         {/* Footer */}
-        <footer className="flex flex-col items-center gap-4 sm:gap-6 mt-8 md:mt-0 z-20">
+        <footer className="flex flex-col items-center gap-6 mt-12 z-20">
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 1 }}
-            className="absolute bottom-24 sm:bottom-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none hidden sm:flex"
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 1 }}
+            className="absolute bottom-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 pointer-events-none hidden md:flex"
           >
-            <span className="text-[7px] sm:text-[8px] uppercase tracking-[0.4em] text-white/20">Scroll</span>
-            <div className="w-px h-6 sm:h-8 bg-gradient-to-b from-white/20 to-transparent" />
+            <span className="text-[8px] uppercase tracking-[0.6em] text-white/10">Deep Navigation</span>
+            <div className="w-[1px] h-12 bg-gradient-to-b from-white/20 to-transparent" />
           </motion.div>
 
           <motion.div 
@@ -334,51 +334,52 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center mb-2 sm:mb-4">
+            <div className="relative w-16 h-16 flex items-center justify-center mb-6">
               <motion.div 
-                className="absolute inset-0 border border-white/10 rounded-full"
+                className="absolute inset-0 border border-white/5 rounded-full"
                 animate={{ 
-                  scale: isHolding ? 1.8 : 1, 
+                  scale: isHolding ? 2 : 1, 
                   opacity: isHolding ? 0 : 1,
-                  borderColor: isHolding ? '#ff3366' : 'rgba(255,255,255,0.1)'
+                  borderColor: isHolding ? '#ff3366' : 'rgba(255,255,255,0.05)'
                 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
               />
               <motion.div 
-                className="absolute inset-0 border border-[#ff3366]/30 rounded-full"
+                className="absolute inset-0 border border-[#ff3366]/20 rounded-full"
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ 
-                  scale: isHolding ? 1.2 : 0, 
-                  opacity: isHolding ? 1 : 0 
+                  scale: isHolding ? 1.4 : 0, 
+                  opacity: isHolding ? 0.6 : 0 
                 }}
                 transition={{ type: 'spring', damping: 15 }}
               />
               <motion.div 
-                className="w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+                className="w-3 h-3 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.4)]"
                 animate={{ 
-                  scale: isHolding ? 3.5 : 1, 
+                  scale: isHolding ? 4 : 1, 
                   backgroundColor: isHolding ? '#ff3366' : '#ffffff',
-                  boxShadow: isHolding ? '0 0 30px rgba(255,51,102,0.8)' : '0 0 15px rgba(255,255,255,0.5)'
+                  boxShadow: isHolding ? '0 0 40px rgba(255,51,102,0.8)' : '0 0 20px rgba(255,255,255,0.4)'
                 }}
               />
             </div>
             <motion.span 
-              className="text-[8px] sm:text-[10px] uppercase tracking-[0.4em] sm:tracking-[0.6em] text-white/40 group-hover:text-white transition-all duration-500"
+              className="text-[10px] uppercase tracking-[0.6em] text-white/20 font-mono transition-all duration-500 group-hover:text-white"
               animate={{
-                color: isHolding ? '#ff3366' : 'rgba(255,255,255,0.4)',
-                letterSpacing: isHolding ? '0.6em' : '0.4em'
+                color: isHolding ? '#ff3366' : 'rgba(255,255,255,0.2)',
+                letterSpacing: isHolding ? '0.8em' : '0.6em'
               }}
             >
-              {isHolding ? 'Evolving...' : 'Click & Hold'}
+              {isHolding ? 'SYNCHRONIZING' : 'HOLD TO EVOLVE'}
             </motion.span>
           </motion.div>
 
-          <div className="w-full flex flex-col sm:flex-row justify-between items-center sm:items-end gap-4 sm:gap-0 mt-4 sm:mt-0">
-            <div className="text-[8px] sm:text-[10px] text-white/20 uppercase tracking-[0.2em] sm:tracking-[0.3em] text-center sm:text-left">
-              © 2026 Nexus Code • Edmonton
+          <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4 mt-8 pt-8 border-t border-white/5">
+            <div className="text-[9px] text-white/10 uppercase tracking-[0.4em] font-mono">
+              © 2026 Nexus_Dev.co // Edmonton_Node
             </div>
-            <div className="flex gap-6 sm:gap-8 text-[8px] sm:text-[10px] text-white/20 uppercase tracking-[0.2em] sm:tracking-[0.3em]">
-              <a href="https://www.linkedin.com/in/nishantsinh-bihola-8bb500321" target="_blank" rel="noopener noreferrer" className="hover:text-white hover:tracking-[0.4em] transition-all duration-300 cursor-pointer pointer-events-auto">LinkedIn</a>
+            <div className="flex gap-10 text-[9px] text-white/10 uppercase tracking-[0.4em] font-mono">
+              <a href="https://www.linkedin.com/in/nishantsinh-bihola-8bb500321" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-all duration-300">LinkedIn</a>
+              <a href="https://github.com/NishantBihola" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-all duration-300">GitHub</a>
             </div>
           </div>
         </footer>
@@ -387,36 +388,76 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
       {/* Services Section */}
       <section 
         ref={servicesSectionRef}
-        className="relative w-full min-h-[60vh] bg-black p-6 sm:p-8 md:p-24 snap-start z-20 border-t border-white/5"
+        className="relative w-full min-h-[80vh] bg-[#050505] p-8 md:p-32 snap-start z-20"
       >
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto h-full flex flex-col justify-center">
+          <div className="mb-20">
+            <span className="text-[10px] uppercase tracking-[0.8em] text-[#ff3366] font-mono block mb-4">Capabilities</span>
+            <h2 className="text-6xl md:text-8xl font-display font-medium tracking-tighter text-white leading-none">Our <br /><span className="text-white/20">Specialization</span></h2>
+          </div>
           <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12 md:gap-24"
-            style={{ perspective: '1000px' }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: "-50px" }}
+            viewport={{ once: true, margin: "-100px" }}
             variants={{
               hidden: { opacity: 0 },
-              show: { opacity: 1, transition: { staggerChildren: 0.2 } }
+              show: { opacity: 1, transition: { staggerChildren: 0.15 } }
             }}
           >
             {[
-              { title: 'UI/UX Design', desc: 'Crafting intuitive interfaces that prioritize user flow and emotional connection.' },
-              { title: 'Brand Identity', desc: 'Building cohesive visual systems that tell a compelling story across all touchpoints.' },
-              { title: '3D Interaction', desc: 'Pushing the boundaries of the web with immersive WebGL and spatial experiences.' }
+              { 
+                title: 'Full-Stack Development', 
+                desc: 'Sleek, performant web applications built with Next.js, Node.js, and modern AI integrations.', 
+                icon: '⚡',
+                details: 'Our full-stack expertise spans the entire development lifecycle. We specialize in building scalable architectures using Next.js 14+, implementing robust server-side logic with Node.js/Express, and leveraging cutting-edge AI embedding for intelligent features. Every line of code is optimized for speed, security, and developer experience.'
+              },
+              { 
+                title: 'Machine Learning', 
+                desc: 'Intelligent systems powered by neural networks and sophisticated data clustering algorithms.', 
+                icon: '🧠',
+                details: 'We push the boundaries of data science by implementing advanced neural networks and clustering algorithms (DBSCAN, K-Means). Our focus is on creating actionable insights from complex datasets, enabling predictive modeling that drives real-world business value. From CIFAR-10 classifiers to custom recommendation engines, we bring AI to life.'
+              },
+              { 
+                title: 'Visual Experience', 
+                desc: 'Immersive 3D environments and pixel-perfect UI/UX design that captivates audiences.', 
+                icon: '✨',
+                details: 'Visual storytelling is at our core. We blend high-end 3D graphics (Three.js/Spline) with meticulous UI/UX principles to create websites that don’t just look good—they feel alive. Our focus is on "Awwwards" level precision, ensuring every transition, micro-animation, and layout shift is purposeful and premium.'
+              }
             ].map((service, i) => (
               <motion.div 
                 key={service.title}
                 variants={{
-                  hidden: { opacity: 0, y: 50, rotateX: -15 },
-                  show: { opacity: 1, y: 0, rotateX: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
+                  hidden: { opacity: 0, y: 30 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
                 }}
-                className="flex flex-col gap-4 md:gap-6 origin-bottom"
+                className={`group relative glass p-10 rounded-2xl hover:bg-white/[0.05] transition-all duration-700 overflow-hidden cursor-pointer ${exploringService === i ? 'ring-2 ring-[#ff3366]' : ''}`}
+                onClick={() => setExploringService(exploringService === i ? null : i)}
               >
-                <span className="text-[9px] md:text-[10px] text-[#ff3366] font-mono">0{i + 1}</span>
-                <h3 className="text-2xl sm:text-3xl font-serif italic text-white">{service.title}</h3>
-                <p className="text-white/40 text-xs sm:text-sm leading-relaxed">{service.desc}</p>
+                <div className="absolute top-0 right-0 p-6 text-2xl opacity-20 group-hover:opacity-100 group-hover:scale-125 transition-all duration-700">{service.icon}</div>
+                <span className="text-[10px] text-[#ff3366] font-mono mb-8 block">0{i + 1}</span>
+                <h3 className="text-2xl font-display font-bold text-white mb-4 group-hover:text-[#ff3366] transition-colors">{service.title}</h3>
+                <p className="text-white/40 text-sm leading-relaxed mb-6 group-hover:text-white/60 transition-colors">{service.desc}</p>
+                
+                <AnimatePresence>
+                  {exploringService === i && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <p className="text-xs text-white/80 font-light leading-relaxed mb-6 border-t border-white/5 pt-6 italic">
+                        {service.details}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="flex items-center gap-2 text-[9px] uppercase tracking-widest text-white/20 group-hover:text-[#ff3366] transition-all duration-500">
+                  <span>{exploringService === i ? 'Show Less' : 'Explore More'}</span>
+                  <div className={`w-6 h-[1px] bg-white/10 group-hover:bg-[#ff3366] transition-colors ${exploringService === i ? 'rotate-90' : ''}`} />
+                </div>
               </motion.div>
             ))}
           </motion.div>

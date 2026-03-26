@@ -28,14 +28,15 @@ export default function App() {
     
     const handleMouseMove = (e: MouseEvent) => {
       if (bgRef.current) {
+        const x = e.clientX / window.innerWidth;
+        const y = e.clientY / window.innerHeight;
+        
         if (isHolding) {
           const baseHue = holdHues[shapeIndex % holdHues.length];
-          bgRef.current.style.backgroundColor = `hsl(${baseHue}, 60%, 12%)`;
+          bgRef.current.style.background = `radial-gradient(circle at ${x * 100}% ${y * 100}%, hsl(${baseHue}, 40%, 15%) 0%, hsl(${baseHue}, 60%, 8%) 50%, #050505 100%)`;
         } else {
-          const x = e.clientX / window.innerWidth;
-          const y = e.clientY / window.innerHeight;
           const hue = Math.floor(x * 60 + y * 60);
-          bgRef.current.style.backgroundColor = `hsl(${hue + 220}, 30%, 6%)`;
+          bgRef.current.style.background = `radial-gradient(circle at ${x * 100}% ${y * 100}%, hsl(${hue + 220}, 20%, 12%) 0%, hsl(220, 30%, 5%) 60%, #050505 100%)`;
         }
       }
     };
@@ -47,9 +48,9 @@ export default function App() {
     if (bgRef.current) {
       if (isHolding) {
         const baseHue = holdHues[shapeIndex % holdHues.length];
-        bgRef.current.style.backgroundColor = `hsl(${baseHue}, 60%, 12%)`;
+        bgRef.current.style.background = `radial-gradient(circle at 50% 50%, hsl(${baseHue}, 40%, 15%) 0%, hsl(${baseHue}, 60%, 8%) 100%)`;
       } else {
-        bgRef.current.style.backgroundColor = `hsl(220, 30%, 6%)`;
+        bgRef.current.style.background = `radial-gradient(circle at 50% 50%, hsl(220, 20%, 12%) 0%, #050505 100%)`;
       }
     }
 
