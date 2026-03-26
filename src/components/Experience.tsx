@@ -1,7 +1,7 @@
 import { Suspense, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, ContactShadows, MeshDistortMaterial } from '@react-three/drei';
+import { Float, ContactShadows, MeshDistortMaterial, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface ExperienceProps {
@@ -12,114 +12,121 @@ interface ExperienceProps {
 const holdShapes = [
   <coneGeometry key="cone" args={[2, 3, 3, 1]} />,
   <boxGeometry key="box" args={[1.8, 1.8, 1.8]} />,
-  <torusGeometry key="torus" args={[1.2, 0.4, 32, 64]} />,
-  <icosahedronGeometry key="icosa" args={[1.8, 0]} />,
-  <octahedronGeometry key="octa" args={[2, 0]} />,
-  <dodecahedronGeometry key="dodeca" args={[1.5, 0]} />
+  <torusGeometry key="torus" args={[1.2, 0.4, 48, 96]} />,      // higher segment count = crisper
+  <icosahedronGeometry key="icosa" args={[1.8, 1]} />,            // subdivision=1 for smoother edges
+  <octahedronGeometry key="octa" args={[2, 1]} />,
+  <dodecahedronGeometry key="dodeca" args={[1.5, 0]} />,
 ];
 
 const holdColors = [
-  "#887bffff", // Cyan (for initial cone)
-  "#ff0000", // Red
-  "#ffea00", // Yellow
-  "#ff3366", // Pink
-  "#b026ff", // Purple
-  "#ff8800"  // Orange
+  '#887bff', // Purple (initial)
+  '#ff0000', // Red
+  '#ffea00', // Yellow
+  '#ff3366', // Pink
+  '#b026ff', // Violet
+  '#ff8800', // Orange
 ];
 
-function InteractiveShape({ isHolding, shapeIndex }: { isHolding: boolean, shapeIndex: number }) {
+function InteractiveShape({ isHolding, shapeIndex }: { isHolding: boolean; shapeIndex: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const materialRef = useRef<any>(null);
-  const targetRotation = useRef({ x: 0, y: 0 });
-  const targetPosition = useRef({ x: 0, y: 0 });
-  const currentScroll = useRef(0);
+  const pulseRef = useRef<THREE.Mesh>(null);
+
+  // Accumulated rotation — frame-rate independent, no lerp jitter
+  const rotVel = useRef({ x: 0, y: 0 });
+  const pos = useRef({ x: 0, y: 0 });
 
   const currentColor = holdColors[shapeIndex % holdColors.length];
-  const targetColor = new THREE.Color(currentColor);
-  const baseColor = new THREE.Color("#00ffff");
+  const targetColorObj = useRef(new THREE.Color(currentColor));
+  const baseColorObj = useRef(new THREE.Color('#887bff'));
+
+  // Keep target color in sync when shapeIndex changes
+  targetColorObj.current.set(currentColor);
 
   useFrame((state, delta) => {
-    if (meshRef.current) {
-      // Read scroll position for scroll interactivity
-      const scrollContainer = document.getElementById('main-scroll-container');
-      const scrollY = scrollContainer ? scrollContainer.scrollTop : 0;
+    const clampedDelta = Math.min(delta, 0.05); // cap delta to avoid huge jumps on tab-switch
 
-      // Smooth scroll delta
-      currentScroll.current = THREE.MathUtils.lerp(currentScroll.current, scrollY, 0.05);
-      const scrollRotation = currentScroll.current * 0.002;
-      const scrollYOffset = currentScroll.current * 0.004;
+    if (!meshRef.current) return;
+    const mesh = meshRef.current;
 
-      // Cursor interactivity (Parallax)
-      targetRotation.current.x = (state.pointer.y * Math.PI) / 6;
-      targetRotation.current.y = (state.pointer.x * Math.PI) / 6;
+    // --- Smooth cursor parallax (spring-like, frame-rate independent) ---
+    const pxTarget = state.pointer.x * 1.0;
+    const pyTarget = state.pointer.y * 1.0;
+    pos.current.x += (pxTarget - pos.current.x) * (1 - Math.exp(-8 * clampedDelta));
+    pos.current.y += (pyTarget - pos.current.y) * (1 - Math.exp(-8 * clampedDelta));
 
-      targetPosition.current.x = state.pointer.x * 1.2;
-      targetPosition.current.y = state.pointer.y * 1.2;
+    mesh.position.x += (pos.current.x - mesh.position.x) * (1 - Math.exp(-6 * clampedDelta));
+    mesh.position.y += (pos.current.y - mesh.position.y) * (1 - Math.exp(-6 * clampedDelta));
 
-      // Apply rotations (Base + Cursor + Scroll)
-      // INCREASED SPEED during hold phase
-      meshRef.current.rotation.x = THREE.MathUtils.lerp(
-        meshRef.current.rotation.x,
-        targetRotation.current.x + (isHolding ? delta * 8 : delta * 0.5),
-        0.08
-      );
+    // --- Rotation velocity (smooth acceleration into hold, deceleration out) ---
+    const targetVelX = isHolding ? 3.5 : 0.25;
+    const targetVelY = isHolding ? 5.0 : 0.4;
+    const acc = isHolding ? 1 - Math.exp(-6 * clampedDelta) : 1 - Math.exp(-3 * clampedDelta);
 
-      meshRef.current.rotation.y = THREE.MathUtils.lerp(
-        meshRef.current.rotation.y,
-        targetRotation.current.y + scrollRotation + (isHolding ? delta * 10 : delta * 0.5),
-        0.08
-      );
+    rotVel.current.x += (targetVelX - rotVel.current.x) * acc;
+    rotVel.current.y += (targetVelY - rotVel.current.y) * acc;
 
-      // Apply position parallax
-      meshRef.current.position.x = THREE.MathUtils.lerp(
-        meshRef.current.position.x,
-        targetPosition.current.x,
-        0.05
-      );
+    mesh.rotation.x += rotVel.current.x * clampedDelta;
+    mesh.rotation.y += rotVel.current.y * clampedDelta;
 
-      meshRef.current.position.y = THREE.MathUtils.lerp(
-        meshRef.current.position.y,
-        targetPosition.current.y + Math.sin(state.clock.elapsedTime) * 0.1 - scrollYOffset,
-        0.05
-      );
+    // --- Scale spring ---
+    const targetScale = isHolding ? 1.28 : 1.0;
+    const currentScale = mesh.scale.x;
+    const newScale = currentScale + (targetScale - currentScale) * (1 - Math.exp(-10 * clampedDelta));
+    mesh.scale.setScalar(newScale);
 
-      // Scale interactivity
-      const targetScale = isHolding ? 1.3 : 1;
-      meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
+    // --- Material transitions (smooth) ---
+    if (materialRef.current) {
+      const mat = materialRef.current;
+      const lerpF = 1 - Math.exp(-5 * clampedDelta);
+
+      mat.distort += ((isHolding ? 0.65 : 0.12) - mat.distort) * lerpF;
+      mat.speed += ((isHolding ? 8 : 1.5) - mat.speed) * lerpF;
+      mat.roughness += ((isHolding ? 0.02 : 0.2) - mat.roughness) * lerpF;
+      mat.metalness += ((isHolding ? 1.0 : 0.75) - mat.metalness) * lerpF;
+      mat.envMapIntensity += ((isHolding ? 4 : 2) - mat.envMapIntensity) * lerpF;
+
+      // Color lerp
+      mat.color.lerp(isHolding ? targetColorObj.current : baseColorObj.current, lerpF * 1.2);
     }
 
-    if (materialRef.current) {
-      // Smoothly animate material properties
-      const targetDistort = isHolding ? 0.8 : 0.15; // Increased distortion on hold
-      const targetSpeed = isHolding ? 10 : 1.5; // Increased speed on hold
-      const targetRoughness = isHolding ? 0.05 : 0.25;
-      const targetMetalness = isHolding ? 0.9 : 0.7;
-
-      materialRef.current.distort = THREE.MathUtils.lerp(materialRef.current.distort, targetDistort, 0.05);
-      materialRef.current.speed = THREE.MathUtils.lerp(materialRef.current.speed, targetSpeed, 0.05);
-      materialRef.current.roughness = THREE.MathUtils.lerp(materialRef.current.roughness, targetRoughness, 0.05);
-      materialRef.current.metalness = THREE.MathUtils.lerp(materialRef.current.metalness, targetMetalness, 0.05);
-
-      // Smoothly interpolate color
-      materialRef.current.color.lerp(isHolding ? targetColor : baseColor, 0.08);
+    // --- Pulse ring ---
+    if (pulseRef.current) {
+      const targetPulse = isHolding ? 1.6 : 0.0;
+      const lerpF2 = 1 - Math.exp(-7 * clampedDelta);
+      const ps = pulseRef.current.scale.x + (targetPulse - pulseRef.current.scale.x) * lerpF2;
+      pulseRef.current.scale.setScalar(ps);
+      (pulseRef.current.material as THREE.MeshBasicMaterial).opacity =
+        isHolding ? Math.sin(state.clock.elapsedTime * 4) * 0.12 + 0.12 : 0;
     }
   });
 
   const currentShape = holdShapes[shapeIndex % holdShapes.length];
 
   return (
-    <Float speed={isHolding ? 10 : 2} rotationIntensity={isHolding ? 5 : 0.5} floatIntensity={isHolding ? 5 : 2}>
+    <Float speed={isHolding ? 6 : 2} rotationIntensity={0} floatIntensity={isHolding ? 3 : 1.2}>
       <mesh ref={meshRef}>
-        {/* Always use currentShape, even when not holding */}
         {currentShape}
         <MeshDistortMaterial
           ref={materialRef}
-          color="#00ffff"
+          color="#887bff"
           envMapIntensity={2}
-          metalness={0.7}
-          roughness={0.25}
-          distort={0.15}
+          metalness={0.75}
+          roughness={0.2}
+          distort={0.12}
           speed={1.5}
+        />
+      </mesh>
+
+      {/* Crispy pulse ring that breathes during hold */}
+      <mesh ref={pulseRef} scale={0} renderOrder={1}>
+        {currentShape}
+        <meshBasicMaterial
+          color={currentColor}
+          transparent
+          opacity={0}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
         />
       </mesh>
     </Float>
@@ -131,34 +138,56 @@ export default function Experience({ isHolding, shapeIndex }: ExperienceProps) {
 
   return (
     <div className="fixed inset-0 z-0 pointer-events-none">
-      <Suspense fallback={
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" />
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" />
+          </div>
+        }
+      >
         <div className="w-full h-full relative">
-          {/* Removed bg-[#0a0a0a] and <color attach="background" /> to allow App.tsx dynamic bg to show */}
-          <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
-            <ambientLight intensity={2} />
+          <Canvas
+            dpr={[1, 2]}                              // crisp on retina/HiDPI
+            camera={{ position: [0, 0, 8], fov: 45 }}
+            gl={{
+              antialias: true,
+              powerPreference: 'high-performance',
+              alpha: true,
+            }}
+          >
+            <ambientLight intensity={1.5} />
             <directionalLight position={[10, 10, 10]} intensity={3} color="#ffffff" />
-            <directionalLight position={[-10, -10, -10]} intensity={2} color={isHolding ? currentColor : "#ff3366"} />
-            <pointLight position={[0, 5, -5]} intensity={5} color="#00ffff" />
+            <directionalLight
+              position={[-10, -10, -10]}
+              intensity={2}
+              color={isHolding ? currentColor : '#ff3366'}
+            />
+            <pointLight position={[0, 5, -5]} intensity={5} color="#887bff" />
+            {/* Rim light that shifts color on hold */}
+            <pointLight
+              position={[5, -5, 5]}
+              intensity={isHolding ? 8 : 2}
+              color={isHolding ? currentColor : '#ffffff'}
+            />
+
+            {/* Environment for realistic reflections */}
+            <Environment preset="city" />
 
             <InteractiveShape isHolding={isHolding} shapeIndex={shapeIndex} />
 
             <ContactShadows
               position={[0, -3, 0]}
-              opacity={0.5}
+              opacity={isHolding ? 0.7 : 0.4}
               scale={10}
-              blur={2}
+              blur={isHolding ? 1.5 : 2.5}   // sharper shadow on hold
               far={4}
-              color={isHolding ? currentColor : "#000000"}
+              color={isHolding ? currentColor : '#000000'}
             />
           </Canvas>
 
-          {/* Post-processing-like overlays to maintain the aesthetic */}
+          {/* Vignette + hold color overlay */}
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.45)_100%)]" />
 
             <AnimatePresence>
               {isHolding && (
@@ -166,8 +195,9 @@ export default function Experience({ isHolding, shapeIndex }: ExperienceProps) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="absolute inset-0 mix-blend-overlay backdrop-blur-[2px]"
-                  style={{ backgroundColor: `${currentColor}15` }}
+                  transition={{ duration: 0.4 }}
+                  className="absolute inset-0 mix-blend-overlay"
+                  style={{ backgroundColor: `${currentColor}18` }}
                 />
               )}
             </AnimatePresence>
@@ -175,7 +205,7 @@ export default function Experience({ isHolding, shapeIndex }: ExperienceProps) {
         </div>
       </Suspense>
 
-      {/* Grain and Noise Overlays */}
+      {/* Grain overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay z-50" />
     </div>
   );
