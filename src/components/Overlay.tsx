@@ -274,7 +274,7 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
               </Canvas>
             </div>
             <div className="flex flex-col">
-              <span className={`text-[8px] md:text-[9px] uppercase tracking-[0.4em] text-[#ff3366] font-mono mb-0.5 transition-all duration-700 ${isHolding ? 'letter-spacing-widest' : ''}`}>Nexus Studio</span>
+              <span className={`text-[8px] md:text-[9px] uppercase tracking-[0.4em] text-[#ff3366] font-mono mb-0.5 transition-all duration-700`}>Nexus Studio</span>
               <h1 className={`text-lg sm:text-xl font-display font-medium tracking-tight text-white transition-all duration-700 ${isHolding ? 'scale-105' : ''}`}>Nexus_dev.co</h1>
             </div>
           </div>
@@ -288,8 +288,10 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
               >
                 <span className="relative z-10">{item === 'contact' ? 'Connect' : item}</span>
                 <motion.div 
-                  className={`absolute bottom-0 left-0 h-[1px] bg-[#ff3366] transition-all duration-500 ${activeSection === item ? 'w-full' : 'w-0 group-hover:w-1/2'}`}
-                  layoutId={activeSection === item ? "nav-underline" : undefined}
+                  className="absolute bottom-0 left-0 h-[1px] bg-[#ff3366]"
+                  layoutId="nav-underline"
+                  animate={{ width: activeSection === item ? '100%' : '0%' }}
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                 />
               </button>
             ))}
@@ -332,10 +334,10 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
 
         {/* Footer */}
         <footer className="flex flex-col items-center gap-6 mt-12 z-20">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 1 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5, duration: 1 }}
             className="absolute bottom-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 pointer-events-none hidden md:flex"
           >
             <span className="text-[8px] uppercase tracking-[0.6em] text-white/10">Deep Navigation</span>
