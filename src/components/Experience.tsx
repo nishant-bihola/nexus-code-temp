@@ -10,6 +10,7 @@ interface ExperienceProps {
 }
 
 const holdShapes = [
+  <coneGeometry key="cone" args={[2, 3, 3, 1]} />,
   <boxGeometry key="box" args={[1.8, 1.8, 1.8]} />,
   <torusGeometry key="torus" args={[1.2, 0.4, 32, 64]} />,
   <icosahedronGeometry key="icosa" args={[1.8, 0]} />,
@@ -18,6 +19,7 @@ const holdShapes = [
 ];
 
 const holdColors = [
+  "#00ffff", // Cyan (for initial cone)
   "#ff0000", // Red
   "#ffea00", // Yellow
   "#ff3366", // Pink
@@ -27,8 +29,14 @@ const holdColors = [
 
 function InteractiveShape({ isHolding, shapeIndex }: { isHolding: boolean, shapeIndex: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const materialRef = useRef<any>(null);
   const targetRotation = useRef({ x: 0, y: 0 });
+  const targetPosition = useRef({ x: 0, y: 0 });
   const currentScroll = useRef(0);
+
+  const currentColor = holdColors[shapeIndex % holdColors.length];
+  const targetColor = new THREE.Color(currentColor);
+  const baseColor = new THREE.Color("#00ffff");
 
   useFrame((state, delta) => {
     if (meshRef.current) {
@@ -37,46 +45,81 @@ function InteractiveShape({ isHolding, shapeIndex }: { isHolding: boolean, shape
       const scrollY = scrollContainer ? scrollContainer.scrollTop : 0;
       
       // Smooth scroll delta
-      currentScroll.current = THREE.MathUtils.lerp(currentScroll.current, scrollY, 0.1);
+      currentScroll.current = THREE.MathUtils.lerp(currentScroll.current, scrollY, 0.05);
       const scrollRotation = currentScroll.current * 0.002;
+      const scrollYOffset = currentScroll.current * 0.004;
 
       // Cursor interactivity (Parallax)
-      targetRotation.current.x = (state.pointer.y * Math.PI) / 4;
-      targetRotation.current.y = (state.pointer.x * Math.PI) / 4;
+      targetRotation.current.x = (state.pointer.y * Math.PI) / 6;
+      targetRotation.current.y = (state.pointer.x * Math.PI) / 6;
+      
+      targetPosition.current.x = state.pointer.x * 1.2;
+      targetPosition.current.y = state.pointer.y * 1.2;
 
       // Apply rotations (Base + Cursor + Scroll)
+      // INCREASED SPEED during hold phase
       meshRef.current.rotation.x = THREE.MathUtils.lerp(
         meshRef.current.rotation.x, 
-        targetRotation.current.x + (isHolding ? delta * 2 : delta * 0.5), 
-        0.1
+        targetRotation.current.x + (isHolding ? delta * 8 : delta * 0.5), 
+        0.08
       );
       
       meshRef.current.rotation.y = THREE.MathUtils.lerp(
         meshRef.current.rotation.y, 
-        targetRotation.current.y + scrollRotation + (isHolding ? delta * 3 : delta * 0.5), 
-        0.1
+        targetRotation.current.y + scrollRotation + (isHolding ? delta * 10 : delta * 0.5), 
+        0.08
+      );
+
+      // Apply position parallax
+      meshRef.current.position.x = THREE.MathUtils.lerp(
+        meshRef.current.position.x,
+        targetPosition.current.x,
+        0.05
+      );
+      
+      meshRef.current.position.y = THREE.MathUtils.lerp(
+        meshRef.current.position.y,
+        targetPosition.current.y + Math.sin(state.clock.elapsedTime) * 0.1 - scrollYOffset,
+        0.05
       );
 
       // Scale interactivity
       const targetScale = isHolding ? 1.3 : 1;
       meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
     }
+
+    if (materialRef.current) {
+      // Smoothly animate material properties
+      const targetDistort = isHolding ? 0.8 : 0.15; // Increased distortion on hold
+      const targetSpeed = isHolding ? 10 : 1.5; // Increased speed on hold
+      const targetRoughness = isHolding ? 0.05 : 0.25;
+      const targetMetalness = isHolding ? 0.9 : 0.7;
+
+      materialRef.current.distort = THREE.MathUtils.lerp(materialRef.current.distort, targetDistort, 0.05);
+      materialRef.current.speed = THREE.MathUtils.lerp(materialRef.current.speed, targetSpeed, 0.05);
+      materialRef.current.roughness = THREE.MathUtils.lerp(materialRef.current.roughness, targetRoughness, 0.05);
+      materialRef.current.metalness = THREE.MathUtils.lerp(materialRef.current.metalness, targetMetalness, 0.05);
+      
+      // Smoothly interpolate color
+      materialRef.current.color.lerp(isHolding ? targetColor : baseColor, 0.08);
+    }
   });
 
   const currentShape = holdShapes[shapeIndex % holdShapes.length];
-  const currentColor = holdColors[shapeIndex % holdColors.length];
 
   return (
-    <Float speed={isHolding ? 5 : 2} rotationIntensity={isHolding ? 2 : 0.5} floatIntensity={isHolding ? 5 : 2}>
+    <Float speed={isHolding ? 10 : 2} rotationIntensity={isHolding ? 5 : 0.5} floatIntensity={isHolding ? 5 : 2}>
       <mesh ref={meshRef}>
-        {isHolding ? currentShape : <coneGeometry args={[2, 3, 3, 1]} />}
+        {/* Always use currentShape, even when not holding */}
+        {currentShape}
         <MeshDistortMaterial
-          color={isHolding ? currentColor : "#00ffff"}
+          ref={materialRef}
+          color="#00ffff"
           envMapIntensity={2}
-          metalness={0.8}
-          roughness={0.1}
-          distort={isHolding ? 0.6 : 0}
-          speed={isHolding ? 6 : 0}
+          metalness={0.7}
+          roughness={0.25}
+          distort={0.15}
+          speed={1.5}
         />
       </mesh>
     </Float>

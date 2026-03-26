@@ -4,13 +4,14 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 const holdShapes = [
+  <octahedronGeometry key="cone" args={[1, 0]} />,
   <boxGeometry key="box" args={[1, 1, 1]} />,
   <torusGeometry key="torus" args={[0.6, 0.2, 16, 32]} />,
   <icosahedronGeometry key="icosa" args={[1, 0]} />,
   <octahedronGeometry key="octa" args={[1, 0]} />,
   <dodecahedronGeometry key="dodeca" args={[0.8, 0]} />
 ];
-const holdColors = ["#ff0000", "#ffea00", "#ff3366", "#b026ff", "#ff8800"];
+const holdColors = ["#00ffff", "#ff0000", "#ffea00", "#ff3366", "#b026ff", "#ff8800"];
 
 function LogoShape({ isHolding, shapeIndex }: { isHolding: boolean, shapeIndex: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -26,7 +27,7 @@ function LogoShape({ isHolding, shapeIndex }: { isHolding: boolean, shapeIndex: 
   const currentColor = holdColors[shapeIndex % holdColors.length];
   return (
     <mesh ref={meshRef}>
-      {isHolding ? currentShape : <octahedronGeometry args={[1, 0]} />}
+      {currentShape}
       <meshBasicMaterial color={isHolding ? currentColor : "#ffffff"} wireframe={!isHolding} />
     </mesh>
   );
@@ -184,7 +185,7 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col items-start text-left w-full"
           >
-            <h2 className={`text-4xl sm:text-5xl text-white mb-6 md:mb-8 transition-all duration-700 ${isHolding ? 'font-display font-bold uppercase tracking-tighter' : 'font-serif italic'}`}>Get in <br />Touch</h2>
+            <h2 className={`text-4xl sm:text-5xl text-white mb-6 md:mb-8 transition-all duration-700 ${isHolding ? 'font-display font-bold uppercase tracking-tighter' : 'font-serif italic'}`}>Start a <br />Project</h2>
             <div className="flex flex-col gap-6 md:gap-8 w-full">
               <div className="group cursor-pointer w-full overflow-hidden">
                 <span className="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Email</span>
@@ -268,7 +269,7 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
                 onClick={() => scrollToSection(item)}
                 className={`text-[9px] sm:text-[10px] md:text-[11px] uppercase tracking-[0.2em] hover:tracking-[0.3em] transition-all duration-300 cursor-pointer relative ${activeSection === item ? 'text-white' : 'text-white/50 hover:text-white'}`}
               >
-                {item}
+                {item === 'contact' ? 'Start a Project' : item}
                 {activeSection === item && (
                   <motion.div layoutId="nav-underline" className="absolute -bottom-1 left-0 right-0 h-[1px] bg-white" />
                 )}

@@ -18,7 +18,7 @@ export default function App() {
   };
   const handleHoldEnd = () => setIsHolding(false);
 
-  const holdHues = [0, 54, 345, 278, 32]; // Red, Yellow, Pink, Purple, Orange
+  const holdHues = [180, 0, 54, 345, 278, 32]; // Cyan, Red, Yellow, Pink, Purple, Orange
 
   // Prevent context menu on long press for mobile & handle dynamic background
   useEffect(() => {
