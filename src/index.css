@@ -32,6 +32,17 @@ canvas {
   touch-action: none;
 }
 
+/* Fluid momentum scrolling */
+#main-scroll-container {
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+}
+
+/* Ensure sections snap gently, never cut animation mid-way */
+#main-scroll-container > section {
+  scroll-snap-stop: normal;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;

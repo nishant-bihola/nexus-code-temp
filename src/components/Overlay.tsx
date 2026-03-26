@@ -217,14 +217,14 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
     <div 
       ref={scrollContainerRef}
       id="main-scroll-container"
-      className="relative z-10 w-full h-screen overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth"
+      className="relative z-10 w-full h-screen overflow-y-auto overflow-x-hidden snap-y snap-proximity scroll-smooth"
     >
       <motion.div
         className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#ff3366] via-[#b026ff] to-[#00ffff] origin-left z-[100] shadow-[0_0_10px_rgba(255,51,102,0.3)]"
         style={{ scaleX: scrollYProgress }}
       />
       {/* Hero Section */}
-      <section className="relative w-full min-h-screen flex flex-col justify-between p-4 sm:p-8 md:p-12 snap-start select-none overflow-hidden">
+      <section className="relative w-full min-h-screen flex flex-col justify-between p-4 sm:p-8 md:p-12 select-none overflow-hidden">
         {/* Header */}
         <header className="fixed top-0 left-0 right-0 px-6 sm:px-12 py-6 flex flex-col md:flex-row justify-between items-center z-[90] glass-dark border-b border-white/5 backdrop-blur-md">
           <div className="flex items-center cursor-pointer group" onClick={() => scrollToSection('home')}>
@@ -391,13 +391,13 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
         </div>
 
         {/* ── Stats / Numbers ── */}
-        <div className="px-8 md:px-24 pt-20 pb-10 max-w-7xl mx-auto w-full">
+        <div className="px-6 md:px-16 pt-24 pb-16 max-w-[1400px] mx-auto w-full">
           <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0 border-b border-white/5 pb-20"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pb-24"
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: '-80px' }}
-            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12 } } }}
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.15 } } }}
           >
             {[
               { num: '6+',  label: 'Projects Shipped',    sub: 'Full-stack production' },
@@ -408,53 +408,62 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
               <motion.div
                 key={stat.label}
                 variants={{
-                  hidden: { opacity: 0, y: 40 },
-                  show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] } },
+                  hidden: { opacity: 0, y: 50, scale: 0.95 },
+                  show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 20, stiffness: 100 } },
                 }}
-                className="flex flex-col md:border-r border-white/5 md:px-12 first:md:pl-0 last:md:border-r-0 group"
+                className="flex flex-col glass border border-white/5 rounded-[2rem] p-8 md:p-10 group hover:border-[#887bff]/40 transition-all duration-700 hover:shadow-[0_0_40px_rgba(136,123,255,0.15)] hover:-translate-y-2 relative overflow-hidden bg-black/40 backdrop-blur-xl"
               >
-                <div className="overflow-hidden mb-2">
+                {/* Background glow on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#887bff]/0 via-transparent to-[#887bff]/15 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                
+                <div className="mb-6 relative z-10">
                   <motion.span
-                    className="block text-5xl md:text-7xl font-display font-bold tracking-tighter text-white group-hover:text-[#887bff] transition-colors duration-500"
+                    className="block text-7xl md:text-8xl lg:text-[7rem] font-display font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 group-hover:from-white group-hover:to-[#887bff] transition-all duration-700 leading-none"
                     whileInView={{ opacity: [0, 1] }}
                     viewport={{ once: true }}
                   >
                     {stat.num}
                   </motion.span>
                 </div>
-                <span className="text-[10px] uppercase tracking-[0.4em] text-white/50 font-mono mb-1">
-                  {stat.label}
-                </span>
-                <span className="text-[9px] text-white/20 font-mono">
-                  {stat.sub}
-                </span>
+                <div className="mt-auto relative z-10">
+                  <span className="block text-[11px] uppercase tracking-[0.4em] text-[#ff3366] font-mono mb-2 group-hover:text-[#887bff] transition-colors duration-500">
+                    {stat.label}
+                  </span>
+                  <span className="block text-[10px] text-white/40 font-mono leading-relaxed group-hover:text-white/70 transition-colors duration-500">
+                    {stat.sub}
+                  </span>
+                </div>
               </motion.div>
             ))}
           </motion.div>
 
           {/* ── Kinetic typography manifesto ── */}
-          <div className="pt-20 pb-24">
+          <div className="pt-10 pb-32 relative">
+            {/* Background ambient glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-64 bg-gradient-to-r from-[#ff3366]/10 via-[#887bff]/10 to-[#00ffff]/10 blur-[100px] rounded-full pointer-events-none" />
+            
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.8 }}
+              className="relative z-10 flex flex-col items-center text-center"
             >
               {/* Label */}
-              <div className="overflow-hidden mb-8">
+              <div className="overflow-hidden mb-12">
                 <motion.span
                   initial={{ y: '110%' }}
                   whileInView={{ y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                  className="block text-[10px] uppercase tracking-[0.8em] text-[#ff3366] font-mono"
+                  className="inline-block px-4 py-2 rounded-full border border-white/10 glass-dark text-[9px] uppercase tracking-[0.8em] text-white/70 font-mono shadow-[0_0_20px_rgba(255,255,255,0.05)]"
                 >
                   Philosophy
                 </motion.span>
               </div>
 
               {/* Big statement — each word is an independent reveal */}
-              <div className="flex flex-wrap gap-x-4 gap-y-2 mb-12">
+              <div className="flex flex-wrap justify-center gap-x-4 md:gap-x-6 gap-y-2 md:gap-y-4 mb-16 max-w-6xl">
                 {[
                   { word: 'Code', accent: false },
                   { word: 'is',   accent: false },
@@ -467,18 +476,18 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
                   { word: 'the',   accent: false },
                   { word: 'edge.', accent: true  },
                 ].map(({ word, accent }, i) => (
-                  <div key={i} className="overflow-hidden">
+                  <div key={i} className="overflow-hidden pb-4">
                     <motion.span
-                      initial={{ y: '115%' }}
-                      whileInView={{ y: 0 }}
+                      initial={{ y: '115%', rotateZ: 4 }}
+                      whileInView={{ y: 0, rotateZ: 0 }}
                       viewport={{ once: true, margin: '-40px' }}
                       transition={{
-                        duration: 1,
-                        delay: i * 0.07,
+                        duration: 1.2,
+                        delay: i * 0.08,
                         ease: [0.22, 1, 0.36, 1],
                       }}
-                      className={`block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif italic leading-tight ${
-                        accent ? 'text-[#887bff]' : 'text-white/80'
+                      className={`block text-5xl sm:text-6xl md:text-7xl lg:text-[7rem] font-serif italic leading-[1] ${
+                        accent ? 'text-transparent bg-clip-text bg-gradient-to-r from-[#ff3366] to-[#b026ff] drop-shadow-[0_0_15px_rgba(176,38,255,0.3)]' : 'text-white/90'
                       }`}
                     >
                       {word}
@@ -487,28 +496,21 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
                 ))}
               </div>
 
-              {/* Supporting text + rule */}
-              <div className="flex flex-col md:flex-row gap-12 items-start">
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                  style={{ originX: 0 }}
-                  className="hidden md:block w-24 h-px bg-gradient-to-r from-[#887bff]/60 to-transparent mt-4 flex-shrink-0"
-                />
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.9, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                  className="text-white/35 text-sm leading-relaxed max-w-md font-sans tracking-wide"
-                >
+              {/* Supporting text */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="glass border border-white/5 rounded-2xl p-6 md:p-8 max-w-2xl relative overflow-hidden"
+              >
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#887bff]/50 to-transparent" />
+                <p className="text-white/50 text-sm md:text-base leading-relaxed font-sans font-light tracking-wide">
                   I build digital experiences that sit at the intersection of engineering precision
                   and creative vision. Every project is an opportunity to push what's possible — 
-                  faster, smarter, more beautiful.
-                </motion.p>
-              </div>
+                  <span className="text-white"> faster, smarter, more beautiful.</span>
+                </p>
+              </motion.div>
             </motion.div>
           </div>
         </div>
