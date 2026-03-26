@@ -119,46 +119,6 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd, shapeIndex 
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'projects':
-        return (
-          <motion.div
-            key="projects"
-            initial={{ opacity: 0, x: -20, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, x: 20, filter: 'blur(10px)' }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col items-start text-left max-w-xl w-full"
-          >
-            <div className="mb-10">
-              <span className="text-[10px] uppercase tracking-[0.6em] text-[#ff3366] font-mono block mb-3">Portfolio</span>
-              <h2 className="text-5xl md:text-7xl font-display font-bold tracking-tighter text-white leading-[0.9]">Selected<br /><span className="text-white/30 italic font-serif font-light">Works</span></h2>
-            </div>
-            <div className="flex flex-col w-full group/list">
-              {[
-                { name: 'Multi-Page App', year: '2024', type: 'Next.js', num: '01' },
-                { name: 'Weather API', year: '2024', type: 'React', num: '02' },
-                { name: 'CIFAR-100', year: '2023', type: 'ML/CNN', num: '03' },
-                { name: 'Clustering', year: '2023', type: 'Data Sci', num: '04' }
-              ].map((project) => (
-                <div 
-                  key={project.name} 
-                  onClick={scrollToProjects}
-                  className="group cursor-pointer border-b border-white/10 py-5 transition-all duration-500 flex items-center gap-6 hover:pl-4"
-                >
-                  <span className="text-[10px] font-mono text-white/20 group-hover:text-[#ff3366] transition-colors">{project.num}</span>
-                  <div className="flex-1 flex justify-between items-center">
-                    <span className="text-2xl md:text-3xl font-display font-medium text-white/50 group-hover:text-white transition-all duration-500">{project.name}</span>
-                    <div className="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0">
-                      <span className="text-[9px] uppercase tracking-widest text-[#ff3366] font-mono">{project.type}</span>
-                      <div className="w-8 h-[1px] bg-white/20" />
-                      <span className="text-[9px] uppercase tracking-widest text-white/30 font-mono">{project.year}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        );
       case 'about':
         return (
           <motion.div
