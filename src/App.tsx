@@ -9,9 +9,17 @@ import Overlay from './components/Overlay';
 
 export default function App() {
   const [isHolding, setIsHolding] = useState(false);
+  const [shapeIndex, setShapeIndex] = useState(0);
 
   const handleHoldStart = () => setIsHolding(true);
-  const handleHoldEnd = () => setIsHolding(false);
+  const handleHoldEnd = () => {
+    setIsHolding(prev => {
+      if (prev) {
+        setShapeIndex(s => s + 1);
+      }
+      return false;
+    });
+  };
 
   // Prevent context menu on long press for mobile
   useEffect(() => {
@@ -24,7 +32,7 @@ export default function App() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#0a0a0a] font-sans selection:bg-white selection:text-black">
-      <Experience isHolding={isHolding} />
+      <Experience isHolding={isHolding} shapeIndex={shapeIndex} />
       <Overlay 
         isHolding={isHolding} 
         onHoldStart={handleHoldStart} 

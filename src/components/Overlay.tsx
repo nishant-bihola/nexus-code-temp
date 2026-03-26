@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 
 interface OverlayProps {
   isHolding: boolean;
@@ -11,6 +11,59 @@ type Section = 'home' | 'projects' | 'about' | 'contact';
 
 export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayProps) {
   const [activeSection, setActiveSection] = useState<Section>('home');
+  const [clickedProject, setClickedProject] = useState<string | null>(null);
+  const [isMorphing, setIsMorphing] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const projectsSectionRef = useRef<HTMLDivElement>(null);
+  const servicesSectionRef = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    container: scrollContainerRef,
+  });
+
+  useEffect(() => {
+    const unsubscribe = scrollYProgress.on('change', (latest) => {
+      if (latest < 0.2) setActiveSection('home');
+      else if (latest < 0.5) setActiveSection('about');
+      else if (latest < 0.8) setActiveSection('projects');
+      else setActiveSection('contact');
+    });
+    return () => unsubscribe();
+  }, [scrollYProgress]);
+
+  const scrollToProjects = () => {
+    projectsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const scrollToSection = (section: Section) => {
+    if (section === 'home') {
+      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (section === 'projects') {
+      scrollToProjects();
+    } else if (section === 'about') {
+      servicesSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    } else if (section === 'contact') {
+      setActiveSection('contact');
+      // Scroll to bottom
+      scrollContainerRef.current?.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' });
+    }
+  };
+
+  const handleProjectClick = (title: string) => {
+    setClickedProject(title);
+    setTimeout(() => setClickedProject(null), 800);
+  };
+
+  const handleStartProject = () => {
+    setIsMorphing(true);
+    setTimeout(() => {
+      window.open("https://www.linkedin.com/in/nishantsinh-bihola-8bb500321", "_blank");
+      scrollToSection('home');
+      setTimeout(() => {
+        setIsMorphing(false);
+      }, 500);
+    }, 1000);
+  };
 
   const renderContent = () => {
     switch (activeSection) {
@@ -21,20 +74,31 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayPr
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -40 }}
-            className="flex flex-col items-start text-left max-w-sm"
+            className="flex flex-col items-start text-left max-w-md"
           >
-            <h2 className="text-5xl font-serif italic text-white mb-8">Selected <br />Works</h2>
-            <div className="flex flex-col gap-8 w-full">
+            <div className="mb-12">
+              <span className="text-[10px] uppercase tracking-[0.5em] text-[#ff3366] block mb-2">Portfolio</span>
+              <h2 className="text-5xl md:text-6xl font-serif italic text-white leading-tight">Selected <br />Works</h2>
+            </div>
+            <div className="flex flex-col gap-6 w-full">
               {[
-                { name: 'Zentry', year: '2024', type: 'Immersive' },
-                { name: 'Shapeshifter', year: '2023', type: 'Experimental' },
-                { name: 'Nexus', year: '2024', type: 'Platform' },
-                { name: 'Ethereal', year: '2022', type: 'Visual' }
+                { name: 'Quantum UI Kit', year: '2025', type: 'Design System', num: '01' },
+                { name: 'Aether Analytics', year: '2024', type: 'Dashboard', num: '02' },
+                { name: 'Horizon Landing', year: '2024', type: 'Marketing', num: '03' },
+                { name: 'Nebula 3D', year: '2026', type: 'Experience', num: '04' }
               ].map((project) => (
-                <div key={project.name} className="group cursor-pointer border-b border-white/10 pb-4 hover:border-white/40 transition-colors">
-                  <div className="flex justify-between items-end">
-                    <span className="text-2xl font-light text-white/80 group-hover:text-white transition-colors">{project.name}</span>
-                    <span className="text-[9px] uppercase tracking-widest text-white/30">{project.type} • {project.year}</span>
+                <div 
+                  key={project.name} 
+                  onClick={scrollToProjects}
+                  className="group cursor-pointer border-b border-white/5 pb-6 hover:border-white/20 transition-all duration-500 flex items-center gap-6"
+                >
+                  <span className="text-[10px] font-mono text-white/20 group-hover:text-[#ff3366] transition-colors">{project.num}</span>
+                  <div className="flex-1 flex justify-between items-center">
+                    <span className="text-2xl md:text-3xl font-light text-white/60 group-hover:text-white group-hover:translate-x-2 transition-all duration-500">{project.name}</span>
+                    <div className="flex flex-col items-end opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      <span className="text-[8px] uppercase tracking-widest text-[#ff3366]">{project.type}</span>
+                      <span className="text-[8px] uppercase tracking-widest text-white/30">{project.year}</span>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -53,24 +117,25 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayPr
             <h2 className="text-5xl font-serif italic text-white mb-8">The Studio</h2>
             <div className="space-y-6">
               <p className="text-white/70 text-base leading-relaxed tracking-wide font-light">
-                Nexus Code is a digital laboratory where code meets art. We specialize in building immersive, high-performance web experiences that push the boundaries of the browser.
+                Nexus Code is a high-end digital agency based in Edmonton, Alberta. We specialize in crafting immersive UI/UX designs that bridge the gap between human emotion and digital precision.
               </p>
               <p className="text-white/50 text-sm leading-relaxed tracking-wide font-light">
-                Founded on the principle of technical excellence and creative courage, we partner with brands that want to define the future of the web.
+                Our approach is rooted in minimalist aesthetics and maximalist functionality. We don't just build interfaces; we create digital ecosystems.
               </p>
             </div>
             <div className="mt-12 grid grid-cols-2 gap-8">
               <div>
                 <span className="text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Services</span>
                 <ul className="text-[11px] text-white/60 space-y-1 uppercase tracking-wider">
-                  <li>Creative Direction</li>
-                  <li>WebGL / 3D</li>
-                  <li>Fullstack Dev</li>
+                  <li>UI/UX Design</li>
+                  <li>Brand Strategy</li>
+                  <li>3D Interaction</li>
+                  <li>Mobile Experience</li>
                 </ul>
               </div>
               <div>
                 <span className="text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Location</span>
-                <p className="text-[11px] text-white/60 uppercase tracking-wider">Auckland, NZ</p>
+                <p className="text-[11px] text-white/60 uppercase tracking-wider">Edmonton, AB</p>
               </div>
             </div>
           </motion.div>
@@ -88,16 +153,19 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayPr
             <div className="flex flex-col gap-8">
               <div className="group cursor-pointer">
                 <span className="text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Inquiries</span>
-                <a href="mailto:hello@nexuscode.studio" className="text-3xl font-light text-white/80 group-hover:text-white transition-colors border-b border-white/20 pb-1 pointer-events-auto">hello@nexuscode.studio</a>
+                <a href="mailto:nishant15bihola@gmail.com" className="text-3xl font-light text-white/80 group-hover:text-white transition-colors border-b border-white/20 pb-1 pointer-events-auto">nishant15bihola@gmail.com</a>
               </div>
               <div className="flex gap-12">
-                <div className="group cursor-pointer">
-                  <span className="text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Social</span>
-                  <span className="text-sm text-white/60 group-hover:text-white transition-colors uppercase tracking-widest">Instagram</span>
-                </div>
-                <div className="group cursor-pointer">
-                  <span className="text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Social</span>
-                  <span className="text-sm text-white/60 group-hover:text-white transition-colors uppercase tracking-widest">Twitter</span>
+                <div className="group cursor-pointer pointer-events-auto">
+                  <span className="text-[9px] uppercase tracking-[0.3em] text-white/30 block mb-2">Connect</span>
+                  <a 
+                    href="https://www.linkedin.com/in/nishantsinh-bihola-8bb500321" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-white/60 group-hover:text-white transition-colors uppercase tracking-widest"
+                  >
+                    LinkedIn
+                  </a>
                 </div>
               </div>
             </div>
@@ -114,111 +182,283 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayPr
           >
             <h2 className="text-5xl md:text-7xl font-serif italic text-white mb-4 leading-tight">
               Immersive <br />
-              Digital Experiences
+              UI/UX Design
             </h2>
-            <p className="text-white/40 text-sm tracking-widest uppercase">Est. 2004 • New Zealand</p>
+            <p className="text-white/40 text-sm tracking-widest uppercase">Nexus Code • Edmonton, AB</p>
           </motion.div>
         );
     }
   };
 
   return (
-    <div className="relative z-10 w-full h-screen flex flex-col justify-between p-8 md:p-12 pointer-events-none select-none">
-      {/* Header */}
-      <header className="flex justify-between items-start pointer-events-auto">
-        <div className="flex flex-col cursor-pointer" onClick={() => setActiveSection('home')}>
-          <span className="text-[10px] uppercase tracking-[0.3em] text-white/50 mb-1">Creative Studio</span>
-          <h1 className="text-2xl font-light tracking-tighter text-white">NEXUS CODE.</h1>
+    <div 
+      ref={scrollContainerRef}
+      className="relative z-10 w-full h-screen overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth"
+    >
+      {/* Hero Section */}
+      <section className="relative w-full h-screen flex flex-col justify-between p-8 md:p-12 snap-start select-none">
+        {/* Header */}
+        <header className="flex justify-between items-start pointer-events-auto">
+          <div className="flex flex-col cursor-pointer" onClick={() => scrollToSection('home')}>
+            <span className="text-[10px] uppercase tracking-[0.3em] text-white/50 mb-1">UI/UX Studio</span>
+            <h1 className="text-2xl font-light tracking-tighter text-white">NEXUS CODE.</h1>
+          </div>
+          
+          <nav className="flex gap-8 md:gap-12">
+            {(['projects', 'about', 'contact'] as Section[]).map((item) => (
+              <button 
+                key={item} 
+                onClick={() => scrollToSection(item)}
+                className={`text-[11px] uppercase tracking-[0.2em] transition-colors cursor-pointer relative ${activeSection === item ? 'text-white' : 'text-white/50 hover:text-white'}`}
+              >
+                {item}
+                {activeSection === item && (
+                  <motion.div layoutId="nav-underline" className="absolute -bottom-1 left-0 right-0 h-[1px] bg-white" />
+                )}
+              </button>
+            ))}
+          </nav>
+        </header>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex items-center px-4 md:px-0">
+          <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-8">
+            {/* Left Side Content (Sections) */}
+            <div className="md:col-span-5 flex items-center pointer-events-auto pt-20 md:pt-0">
+              <AnimatePresence mode="wait">
+                {!isHolding && activeSection !== 'home' && renderContent()}
+              </AnimatePresence>
+            </div>
+
+            {/* Center/Right Side (Sphere Area) */}
+            <div className="md:col-span-7 flex items-center justify-center relative min-h-[40vh] md:min-h-0">
+              <AnimatePresence mode="wait">
+                {isHolding ? (
+                  <motion.div
+                    key="holding"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.1 }}
+                    className="flex flex-col items-center z-20"
+                  >
+                    <h3 className="text-4xl md:text-5xl font-serif italic text-white mb-2">Evolution</h3>
+                    <p className="text-[#ff3366] text-[9px] md:text-[10px] tracking-[0.8em] uppercase animate-pulse">Neural Link Established</p>
+                  </motion.div>
+                ) : activeSection === 'home' && (
+                  <div className="pointer-events-auto">
+                    {renderContent()}
+                  </div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
-        
-        <nav className="flex gap-12">
-          {(['projects', 'about', 'contact'] as Section[]).map((item) => (
-            <button 
-              key={item} 
-              onClick={() => setActiveSection(item)}
-              className={`text-[11px] uppercase tracking-[0.2em] transition-colors cursor-pointer relative ${activeSection === item ? 'text-white' : 'text-white/50 hover:text-white'}`}
+
+        {/* Footer */}
+        <footer className="flex flex-col items-center gap-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1, duration: 1 }}
+            className="absolute bottom-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none"
+          >
+            <span className="text-[8px] uppercase tracking-[0.4em] text-white/20">Scroll</span>
+            <div className="w-px h-8 bg-gradient-to-b from-white/20 to-transparent" />
+          </motion.div>
+
+          <div 
+            className="pointer-events-auto cursor-pointer group flex flex-col items-center"
+            onMouseDown={onHoldStart}
+            onMouseUp={onHoldEnd}
+            onMouseLeave={onHoldEnd}
+            onTouchStart={onHoldStart}
+            onTouchEnd={onHoldEnd}
+          >
+            <div className="relative w-16 h-16 flex items-center justify-center mb-4">
+              <motion.div 
+                className="absolute inset-0 border border-white/10 rounded-full"
+                animate={{ 
+                  scale: isHolding ? 1.8 : 1, 
+                  opacity: isHolding ? 0 : 1,
+                  borderColor: isHolding ? '#ff3366' : 'rgba(255,255,255,0.1)'
+                }}
+                transition={{ duration: 0.5 }}
+              />
+              <motion.div 
+                className="absolute inset-0 border border-[#ff3366]/30 rounded-full"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ 
+                  scale: isHolding ? 1.2 : 0, 
+                  opacity: isHolding ? 1 : 0 
+                }}
+                transition={{ type: 'spring', damping: 15 }}
+              />
+              <motion.div 
+                className="w-3 h-3 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+                animate={{ 
+                  scale: isHolding ? 3.5 : 1, 
+                  backgroundColor: isHolding ? '#ff3366' : '#ffffff',
+                  boxShadow: isHolding ? '0 0 30px rgba(255,51,102,0.8)' : '0 0 15px rgba(255,255,255,0.5)'
+                }}
+              />
+            </div>
+            <motion.span 
+              className="text-[10px] uppercase tracking-[0.6em] text-white/40 group-hover:text-white transition-all duration-500"
+              animate={{
+                color: isHolding ? '#ff3366' : 'rgba(255,255,255,0.4)',
+                letterSpacing: isHolding ? '0.8em' : '0.6em'
+              }}
             >
-              {item}
-              {activeSection === item && (
-                <motion.div layoutId="nav-underline" className="absolute -bottom-1 left-0 right-0 h-[1px] bg-white" />
-              )}
-            </button>
-          ))}
-        </nav>
-      </header>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex items-center">
-        <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-8">
-          {/* Left Side Content (Sections) */}
-          <div className="md:col-span-5 flex items-center pointer-events-auto">
-            <AnimatePresence mode="wait">
-              {!isHolding && activeSection !== 'home' && renderContent()}
-            </AnimatePresence>
+              {isHolding ? 'Evolving...' : 'Click & Hold'}
+            </motion.span>
           </div>
 
-          {/* Center/Right Side (Sphere Area) */}
-          <div className="md:col-span-7 flex items-center justify-center relative">
-            <AnimatePresence mode="wait">
-              {isHolding ? (
-                <motion.div
-                  key="holding"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.1 }}
-                  className="flex flex-col items-center z-20"
+          <div className="w-full flex justify-between items-end">
+            <div className="text-[10px] text-white/20 uppercase tracking-[0.3em]">
+              © 2026 Nexus Code • Edmonton
+            </div>
+            <div className="flex gap-8 text-[10px] text-white/20 uppercase tracking-[0.3em]">
+              <a href="https://www.linkedin.com/in/nishantsinh-bihola-8bb500321" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors cursor-pointer pointer-events-auto">LinkedIn</a>
+            </div>
+          </div>
+        </footer>
+      </section>
+
+      {/* Services Section */}
+      <section 
+        ref={servicesSectionRef}
+        className="relative w-full min-h-[60vh] bg-black p-8 md:p-24 snap-start z-20 border-t border-white/5"
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-24">
+            {[
+              { title: 'UI/UX Design', desc: 'Crafting intuitive interfaces that prioritize user flow and emotional connection.' },
+              { title: 'Brand Identity', desc: 'Building cohesive visual systems that tell a compelling story across all touchpoints.' },
+              { title: '3D Interaction', desc: 'Pushing the boundaries of the web with immersive WebGL and spatial experiences.' }
+            ].map((service, i) => (
+              <motion.div 
+                key={service.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.2 }}
+                className="flex flex-col gap-6"
+              >
+                <span className="text-[10px] text-[#ff3366] font-mono">0{i + 1}</span>
+                <h3 className="text-3xl font-serif italic text-white">{service.title}</h3>
+                <p className="text-white/40 text-sm leading-relaxed">{service.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Projects Showcase Section */}
+      <section 
+        ref={projectsSectionRef}
+        className="relative w-full min-h-screen bg-black p-8 md:p-24 snap-start z-20"
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8">
+            <div className="max-w-2xl">
+              <span className="text-[10px] uppercase tracking-[0.5em] text-[#ff3366] block mb-4">Portfolio</span>
+              <h2 className="text-6xl md:text-8xl font-serif italic text-white leading-tight">
+                Digital <br />Craftsmanship
+              </h2>
+            </div>
+            <p className="text-white/40 text-sm max-w-xs leading-relaxed tracking-wide">
+              A collection of UI/UX projects where functionality meets aesthetic perfection. Each pixel is intentional.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-32">
+            {[
+              { 
+                title: 'Quantum UI Kit', 
+                category: 'UI Components / Design System', 
+                img: 'https://image.pollinations.ai/prompt/modern%20dark%20mode%20saas%20dashboard%20ui%20ux%20design%20webflow%20dribbble%20high%20quality?width=800&height=1000&nologo=true',
+                desc: 'A comprehensive design system built for high-scale enterprise applications, focusing on modularity and accessibility.'
+              },
+              { 
+                title: 'Horizon Landing', 
+                category: 'Landing Page / Marketing', 
+                img: 'https://image.pollinations.ai/prompt/minimalist%20landing%20page%20website%20design%20ui%20ux%20clean%20typography%20webflow%20high%20quality?width=800&height=1000&nologo=true',
+                desc: 'A high-conversion landing page for a next-gen cloud provider, featuring fluid animations and bold typography.'
+              },
+              { 
+                title: 'Aether Analytics', 
+                category: 'Dashboard / Data Viz', 
+                img: 'https://image.pollinations.ai/prompt/crypto%20dashboard%20analytics%20ui%20ux%20design%20dark%20theme%20glassmorphism%20high%20quality?width=800&height=1000&nologo=true',
+                desc: 'Real-time data visualization platform for global logistics, simplifying complex supply chain metrics into actionable insights.'
+              },
+              { 
+                title: 'Nebula 3D', 
+                category: '3D Animated Project', 
+                img: 'https://image.pollinations.ai/prompt/creative%20agency%20portfolio%20website%20design%20ui%20ux%203d%20elements%20webflow%20high%20quality?width=800&height=1000&nologo=true',
+                desc: 'An immersive 3D web experience exploring spatial storytelling through interactive WebGL environments.'
+              },
+              { 
+                title: 'Vortex Mobile', 
+                category: 'Mobile App / iOS', 
+                img: 'https://image.pollinations.ai/prompt/fintech%20mobile%20app%20ui%20ux%20design%20dashboard%20modern%20clean%20high%20quality?width=800&height=1000&nologo=true',
+                desc: 'A minimalist mobile banking experience that prioritizes speed and security without compromising on aesthetic elegance.'
+              },
+              { 
+                title: 'Cyber Core', 
+                category: 'WebGL / Creative Tech', 
+                img: 'https://image.pollinations.ai/prompt/ecommerce%20website%20design%20ui%20ux%20modern%20fashion%20landing%20page%20high%20quality?width=800&height=1000&nologo=true',
+                desc: 'Pushing the boundaries of browser-based graphics with a generative art installation powered by custom shaders.'
+              }
+            ].map((project, i) => (
+              <motion.div 
+                key={project.title}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: i * 0.1 }}
+                className={`flex flex-col ${i % 2 === 1 ? 'md:mt-32' : ''}`}
+              >
+                <motion.div 
+                  className="relative aspect-[4/5] overflow-hidden group cursor-pointer mb-8 rounded-lg"
+                  onClick={() => handleProjectClick(project.title)}
+                  animate={clickedProject === project.title ? { scale: 0.95, rotate: -2 } : { scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 15 }}
                 >
-                  <h3 className="text-5xl font-serif italic text-white mb-2">Evolution</h3>
-                  <p className="text-[#ff3366] text-[10px] tracking-[0.8em] uppercase animate-pulse">Neural Link Established</p>
+                  <img 
+                    src={project.img} 
+                    alt={project.title}
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-110"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500" />
                 </motion.div>
-              ) : activeSection === 'home' && (
-                <div className="pointer-events-auto">
-                  {renderContent()}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-3xl font-serif italic text-white mb-2">{project.title}</h3>
+                    <p className="text-white/40 text-xs uppercase tracking-widest">{project.category}</p>
+                  </div>
+                  <p className="text-white/30 text-[11px] max-w-[180px] text-right leading-relaxed">
+                    {project.desc}
+                  </p>
                 </div>
-              )}
-            </AnimatePresence>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="mt-48 text-center">
+            <button 
+              onClick={handleStartProject}
+              className="group relative inline-flex flex-col items-center"
+            >
+              <span className="text-[10px] uppercase tracking-[0.5em] text-white/40 mb-4 group-hover:text-white transition-colors">Start a Project</span>
+              <div className="w-px h-24 bg-gradient-to-b from-white/20 to-transparent" />
+            </button>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Footer */}
-      <footer className="flex flex-col items-center gap-6">
-        <div 
-          className="pointer-events-auto cursor-pointer group flex flex-col items-center"
-          onMouseDown={onHoldStart}
-          onMouseUp={onHoldEnd}
-          onMouseLeave={onHoldEnd}
-          onTouchStart={onHoldStart}
-          onTouchEnd={onHoldEnd}
-        >
-          <div className="relative w-14 h-14 flex items-center justify-center mb-3">
-            <motion.div 
-              className="absolute inset-0 border border-white/20 rounded-full"
-              animate={{ scale: isHolding ? 1.6 : 1, opacity: isHolding ? 0 : 1 }}
-            />
-            <motion.div 
-              className="w-2.5 h-2.5 bg-white rounded-full"
-              animate={{ scale: isHolding ? 4 : 1, backgroundColor: isHolding ? '#ff3366' : '#ffffff' }}
-            />
-          </div>
-          <span className="text-[10px] uppercase tracking-[0.5em] text-white/40 group-hover:text-white/80 transition-colors">
-            {isHolding ? 'Release' : 'Click & Hold'}
-          </span>
-        </div>
-
-        <div className="w-full flex justify-between items-end">
-          <div className="text-[10px] text-white/20 uppercase tracking-[0.3em]">
-            © 2026 Nexus Code Studio
-          </div>
-          <div className="flex gap-8 text-[10px] text-white/20 uppercase tracking-[0.3em]">
-            <span className="hover:text-white transition-colors cursor-pointer pointer-events-auto">Twitter</span>
-            <span className="hover:text-white transition-colors cursor-pointer pointer-events-auto">Instagram</span>
-          </div>
-        </div>
-      </footer>
-
-      {/* Overlays */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.04] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay" />
+      {/* Overlays (Fixed) */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.04] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay z-50" />
       
       <AnimatePresence>
         {isHolding && (
@@ -226,8 +466,26 @@ export default function Overlay({ isHolding, onHoldStart, onHoldEnd }: OverlayPr
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 pointer-events-none z-[-1] bg-gradient-to-t from-[#ff3366]/10 via-transparent to-[#ff3366]/5"
+            className="fixed inset-0 pointer-events-none z-10 bg-gradient-to-t from-[#ff3366]/10 via-transparent to-[#ff3366]/5"
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isMorphing && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, borderRadius: '100%' }}
+            animate={{ opacity: 1, scale: 1.5, borderRadius: '0%' }}
+            exit={{ opacity: 0, scale: 0.8, borderRadius: '100%' }}
+            transition={{ duration: 1, ease: "easeInOut" }}
+            className="fixed inset-0 z-[100] bg-black flex items-center justify-center pointer-events-auto"
+          >
+            <motion.div 
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+              className="w-16 h-16 border-t-2 border-[#ff3366] rounded-full"
+            />
+          </motion.div>
         )}
       </AnimatePresence>
       
